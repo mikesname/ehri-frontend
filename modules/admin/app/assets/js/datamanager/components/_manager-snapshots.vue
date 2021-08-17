@@ -61,7 +61,7 @@ export default {
       </div>
     </div>
     <ul v-else-if="snapshots">
-      <li v-for="snapshot in snapshots" v-on:click="load(snapshot)">
+      <li v-for="snapshot in snapshots" v-on:click.prevent="load(snapshot)">
         <a href="#">{{ snapshot.created }}</a>
       </li>
     </ul>
