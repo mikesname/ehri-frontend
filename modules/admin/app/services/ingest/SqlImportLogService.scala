@@ -145,12 +145,15 @@ case class SqlImportLogService @Inject()(db: Database, actorSystem: ActorSystem)
 
   def findUntouchedItemIds(repoId: String, snapshotId: Int): Future[Seq[(String, String)]] = Future {
     db.withConnection { implicit conn =>
-      SQL"""SELECT si.item_id, si.local_id FROM repo_snapshot_item si
+      SQL"""SELECT DISTINCT si.item_id, si.local_id
+            FROM repo_snapshot_item si
               JOIN repo_snapshot s ON si.repo_snapshot_id = s.id
-            WHERE si.item_id NOT IN (
-              SELECT item_id FROM import_log_file_mapping m
+            WHERE NOT EXISTS (
+              SELECT DISTINCT m.item_id FROM import_file_mapping m
                 JOIN import_log l ON m.import_log_id = l.id
-                WHERE l.repo_id = $repoId AND l.created > s.created
+                WHERE l.repo_id = $repoId
+                  AND m.item_id = si.item_id
+                  AND l.created > s.created
             )
             ORDER BY si.item_id
             """.as(idMapParser.*)
