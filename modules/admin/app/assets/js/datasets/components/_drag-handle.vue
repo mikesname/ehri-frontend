@@ -1,5 +1,7 @@
 <script lang="ts">
 
+import Vue from "vue";
+
 export default {
   props: {
     ns: String,
@@ -50,6 +52,12 @@ export default {
       }, {once: true});
     },
   },
+  mounted() {
+    Vue.nextTick().then(() => {
+      console.log("Resize on mount:", this.p2(), this.p2().clientHeight);
+      this.$emit("resize", this.p2().clientHeight)
+    });
+  }
 };
 </script>
 

@@ -211,7 +211,7 @@ export default {
             </div>
           </div>
           <div class="status-panel log-container" v-show="tab === 'validation'">
-            <panel-log-window v-bind:log="validationLog" v-if="validationLog.length > 0"/>
+            <panel-log-window v-bind:panel-size="panelSize" v-bind:log="validationLog" v-if="validationLog.length > 0"/>
             <div  class="panel-placeholder" v-else>
               Validation log output will show here.
             </div>

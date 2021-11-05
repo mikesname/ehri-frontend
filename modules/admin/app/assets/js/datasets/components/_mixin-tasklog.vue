@@ -4,9 +4,7 @@
 import {DatasetManagerApi} from "../api";
 import _startsWith from "lodash/startsWith";
 import _last from "lodash/last";
-import Vue from 'vue';
-import { Terminal } from 'xterm';
-import { FitAddon } from 'xterm-addon-fit';
+import {Terminal} from 'xterm';
 import 'xterm/css/xterm.css';
 
 let initialLogState = function(): object {
@@ -34,7 +32,6 @@ export default {
   },
   methods: {
     reset: function() {
-      // this.log.length = 0;
       this.log.reset();
     },
 
