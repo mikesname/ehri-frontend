@@ -215,10 +215,11 @@ export default {
             </div>
           </div>
           <div class="status-panel log-container" v-show="tab === 'harvest'">
-            <panel-log-window v-bind:log="log" v-if="log.length > 0"/>
-            <div class="panel-placeholder" v-else>
-              Harvest log output will show here.
-            </div>
+            <panel-log-window v-bind:panel-size="panelSize" v-bind:log="log"/>
+<!--            <panel-log-window v-bind:log="log" v-if="log.length > 0"/>-->
+<!--            <div class="panel-placeholder" v-else>-->
+<!--              Harvest log output will show here.-->
+<!--            </div>-->
           </div>
         </div>
       </div>

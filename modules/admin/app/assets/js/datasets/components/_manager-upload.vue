@@ -15,6 +15,7 @@ import MixinPreview from './_mixin-preview';
 import MixinValidator from './_mixin-validator';
 import MixinError from './_mixin-error';
 import MixinUtil from './_mixin-util';
+import MixinTaskLog from './_mixin-tasklog';
 
 import {DatasetManagerApi} from '../api';
 
@@ -65,7 +66,7 @@ function sequentialUpload(uploadFunc, argArray, index, {done, cancelled}) {
 
 export default {
   components: {FilterControl, FilesTable, PanelLogWindow, DragHandle, ModalInfo, PanelFilePreview, ButtonValidate, ButtonDelete, UploadProgress},
-  mixins: [MixinStage, MixinTwoPanel, MixinPreview, MixinValidator, MixinError, MixinUtil],
+  mixins: [MixinStage, MixinTwoPanel, MixinPreview, MixinValidator, MixinError, MixinUtil, MixinTaskLog],
   props: {
     datasetContentType: String,
     fileStage: String,
@@ -121,7 +122,8 @@ export default {
             })
                 .then(() => {
                   this.finishUpload(file);
-                  this.log.push(file.name);
+                  // this.log.push(file.name);
+                  this.log.writeln(file.name);
                   this.$delete(this.validationResults, file.name);
                   this.refresh();
                   return file;
@@ -169,7 +171,8 @@ export default {
               event.target.value = null;
             }
             this.$emit('updated')
-            this.log.push("Uploaded: " + done + (cancelled ? (", Cancelled: " + cancelled) : ""))
+            // this.log.push("Uploaded: " + done + (cancelled ? (", Cancelled: " + cancelled) : ""))
+            this.log.writeln("Uploaded: " + done + (cancelled ? (", Cancelled: " + cancelled) : ""))
           });
     },
   },
@@ -303,10 +306,11 @@ export default {
             </div>
           </div>
           <div class="status-panel log-container" v-show="tab === 'upload'">
-            <panel-log-window v-bind:log="log" v-if="log.length > 0"/>
-            <div class="panel-placeholder" v-else>
-              Upload log output will show here.
-            </div>
+            <panel-log-window v-bind:panel-size="panelSize" v-bind:log="log"/>
+<!--            <panel-log-window v-bind:log="log" v-if="log.length > 0"/>-->
+<!--            <div class="panel-placeholder" v-else>-->
+<!--              Upload log output will show here.-->
+<!--            </div>-->
           </div>
         </div>
       </div>

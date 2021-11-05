@@ -1,15 +1,47 @@
 <script lang="ts">
 
+import {Terminal} from "xterm";
+import {FitAddon} from "xterm-addon-fit";
+import {WebLinksAddon} from "xterm-addon-web-links";
+
 export default {
   props: {
-    log: Array,
+    log: Terminal,
+    panelSize: Number,
   },
-  updated: function () {
-    this.$el.scrollTop = this.$el.scrollHeight;
+  // updated: function () {
+    // this.$el.scrollTop = this.$el.scrollHeight;
+  // },
+  methods: {
+    fit: function() {
+      this.$fitAddon.fit();
+    }
   },
+  watch: {
+    panelSize: function() {
+      this.fit();
+    }
+  },
+  mounted() {
+    const elem = this.$el as HTMLElement;
+    this.$fitAddon = new FitAddon() as FitAddon;
+    this.$webLinks = new WebLinksAddon();
+    this.log.loadAddon(this.$fitAddon);
+    this.log.loadAddon(this.$webLinks);
+    this.log.open(elem);
+    this.$fitAddon.fit();
+  }
 };
 </script>
 
 <template>
-  <pre v-if="log.length > 0"><template v-for="msg in log"><span v-html="msg"></span><br/></template></pre>
+  <div class="xterm-container"></div>
 </template>
+
+<style scoped>
+.xterm-container {
+  height: 100%;
+  width: 100%;
+  padding: 5px;
+}
+</style>

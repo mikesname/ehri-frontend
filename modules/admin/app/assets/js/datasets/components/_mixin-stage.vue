@@ -26,7 +26,6 @@ let initialStageState = function(): object {
       active: false
     },
     files: [],
-    log: [],
     fileInfo: null,
   };
 };

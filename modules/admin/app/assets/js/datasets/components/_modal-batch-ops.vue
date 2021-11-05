@@ -354,10 +354,11 @@ export default {
     </fieldset>
 
     <div class="log-container" id="batch-ops-log">
-      <panel-log-window v-if="log.length > 0" v-bind:log="log"/>
-      <div v-else class="panel-placeholder">
-
-      </div>
+      <panel-log-window v-bind:panel-size="panelSize" v-bind:log="log"/>
+<!--      <panel-log-window v-if="log.length > 0" v-bind:log="log"/>-->
+<!--      <div v-else class="panel-placeholder">-->
+<!---->
+<!--      </div>-->
     </div>
     <template v-slot:footer>
       <button v-bind:disabled="!inProgress" v-on:click="cancelOperation" v-bind:class="{'btn-default': !inProgress, 'btn-warning': inProgress}"
