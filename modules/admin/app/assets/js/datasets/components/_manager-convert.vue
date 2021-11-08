@@ -31,7 +31,7 @@ let initialConvertState = function(config) {
     previewStage: config.input,
     previewPipeline: [],
     previewing: null,
-    tab: 'preview',
+    tab: 'log',
     showOptions: false,
     available: [],
     parametersForEditor: {},
@@ -111,7 +111,7 @@ export default {
     },
     convert: async function(file, force) {
       console.debug("Converting:", file)
-      this.tab = "convert";
+      this.tab = "log";
       try {
         let {url, jobId} = await this.api.convert(this.datasetId, file ? file.key : null, {
           mappings: this.convertState,
@@ -131,7 +131,7 @@ export default {
       let jobId = this.getQueryParam(window.location.search, this.urlKey);
       if (jobId) {
         try {
-          this.tab = "convert";
+          this.tab = "log";
           await this.monitor(this.config.monitorUrl(jobId), jobId, (m: string) => {
             this.$emit('refresh-stage', this.config.output);
           });
@@ -385,16 +385,16 @@ export default {
       <div id="convert-status-panels" class="bottom-panel">
         <ul class="status-panel-tabs nav nav-tabs">
           <li class="nav-item">
+            <a href="#" class="nav-link" v-bind:class="{'active': tab === 'log'}"
+               v-on:click.prevent="tab = 'log'">
+              Info
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="#" class="nav-link" v-bind:class="{'active': tab === 'preview'}"
                v-on:click.prevent="tab = 'preview'">
               File Preview
               <template v-if="previewing"> - {{previewing.key}}</template>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link" v-bind:class="{'active': tab === 'convert'}"
-               v-on:click.prevent="tab = 'convert'">
-              Convert Log
             </a>
           </li>
           <li>
@@ -427,12 +427,8 @@ export default {
               No file selected.
             </div>
           </div>
-          <div class="status-panel log-container" v-show="tab === 'convert'">
+          <div class="status-panel log-container" v-show="tab === 'log'">
             <panel-log-window v-bind:panel-size="panelSize" v-bind:log="log"/>
-<!--            <panel-log-window v-bind:log="log" v-if="log.length > 0"/>-->
-<!--            <div class="panel-placeholder" v-else>-->
-<!--              Convert log output will show here.-->
-<!--            </div>-->
           </div>
         </div>
       </div>

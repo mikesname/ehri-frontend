@@ -163,22 +163,16 @@ export default {
       <div id="oaipmh-status-panels" class="bottom-panel">
         <ul class="status-panel-tabs nav nav-tabs">
           <li class="nav-item">
+            <a href="#" class="nav-link" v-bind:class="{'active': tab === 'log'}"
+               v-on:click.prevent="tab = 'log'">
+              Info
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="#" class="nav-link" v-bind:class="{'active': tab === 'preview'}"
                v-on:click.prevent="tab = 'preview'">
               File Preview
               <template v-if="previewing"> - {{ decodeURI(previewing.key) }}</template>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link" v-bind:class="{'active': tab === 'validation'}"
-               v-on:click.prevent="tab = 'validation'">
-              Validation Log
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link" v-bind:class="{'active': tab === 'harvest'}"
-               v-on:click.prevent="tab = 'harvest'">
-              Harvest Log
             </a>
           </li>
           <li>
@@ -208,18 +202,8 @@ export default {
               No file selected.
             </div>
           </div>
-          <div class="status-panel log-container" v-show="tab === 'validation'">
-            <panel-log-window v-bind:panel-size="panelSize" v-bind:log="validationLog" v-if="validationLog.length > 0"/>
-            <div class="panel-placeholder" v-else>
-              Validation log output will show here.
-            </div>
-          </div>
-          <div class="status-panel log-container" v-show="tab === 'harvest'">
+          <div class="status-panel log-container" v-show="tab === 'log'">
             <panel-log-window v-bind:panel-size="panelSize" v-bind:log="log"/>
-<!--            <panel-log-window v-bind:log="log" v-if="log.length > 0"/>-->
-<!--            <div class="panel-placeholder" v-else>-->
-<!--              Harvest log output will show here.-->
-<!--            </div>-->
           </div>
         </div>
       </div>

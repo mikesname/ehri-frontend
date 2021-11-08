@@ -1,12 +1,15 @@
 <script lang="ts">
 
 import ManagerDatasetList from './components/_manager-dataset-list';
-import ManagerDataset from './components/_manager-dataset';
-import ManagerSnapshots from './components/_manager-snapshots';
 import MixinUtil from './components/_mixin-util';
 import {DatasetManagerApi} from "./api";
 
+import Vue from 'vue';
+import {ObserveVisibility} from 'vue-observe-visibility';
 import {ConfigType} from "./types";
+
+
+Vue.directive('observe-visibility', ObserveVisibility);
 
 if (typeof window !== 'undefined') {
   // Prevent default drag/drop action...

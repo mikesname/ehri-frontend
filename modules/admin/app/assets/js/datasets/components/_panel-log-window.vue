@@ -7,13 +7,14 @@ import {WebLinksAddon} from "xterm-addon-web-links";
 export default {
   props: {
     log: Terminal,
-    panelSize: Number,
+    panelSize: {
+      type: Number,
+      default: -1,
+    },
   },
-  // updated: function () {
-    // this.$el.scrollTop = this.$el.scrollHeight;
-  // },
   methods: {
     fit: function() {
+      console.debug("Resize terminal...");
       this.$fitAddon.fit();
     }
   },
@@ -35,7 +36,7 @@ export default {
 </script>
 
 <template>
-  <div class="xterm-container"></div>
+  <div v-observe-visibility="fit" class="xterm-container"></div>
 </template>
 
 <style scoped>

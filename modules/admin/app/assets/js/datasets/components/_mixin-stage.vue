@@ -15,7 +15,7 @@ let initialStageState = function(): object {
     loaded: false,
     loadingMore: false,
     truncated: false,
-    tab: 'preview',
+    tab: 'log',
     previewing: null,
     deleting: {},
     downloading: {},

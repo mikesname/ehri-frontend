@@ -48,7 +48,7 @@ export default {
       let jobId = this.getQueryParam(window.location.search, this.urlKey);
       if (jobId) {
         try {
-          this.tab = "ingest";
+          this.tab = "log";
           await this.monitor(this.config.monitorUrl(jobId), jobId);
         } finally {
           this.removeUrlState(this.urlKey);
@@ -64,7 +64,7 @@ export default {
       try {
         let {url, jobId} = await this.api.ingestFiles(this.datasetId, this.selectedKeys, opts, commit);
         // Switch to ingest tab...
-        this.tab = "ingest";
+        this.tab = "log";
         // Clear existing log...
         this.reset();
         this.showOptions = false;
@@ -187,22 +187,16 @@ export default {
       <div id="ingest-status-panel" class="bottom-panel">
         <ul class="status-panel-tabs nav nav-tabs">
           <li class="nav-item">
+            <a href="#" class="nav-link" v-bind:class="{'active': tab === 'log'}"
+               v-on:click.prevent="tab = 'log'">
+              Log
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="#" class="nav-link" v-bind:class="{'active': tab === 'preview'}"
                v-on:click.prevent="tab = 'preview'">
               File Preview
               <template v-if="previewing"> - {{ decodeURI(previewing.key) }}</template>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link" v-bind:class="{'active': tab === 'validation'}"
-               v-on:click.prevent="tab = 'validation'">
-              Validation Log
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link" v-bind:class="{'active': tab === 'ingest'}"
-               v-on:click.prevent="tab = 'ingest'">
-              Ingest Log
             </a>
           </li>
           <li>
@@ -231,18 +225,8 @@ export default {
               No file selected.
             </div>
           </div>
-          <div class="status-panel log-container" v-show="tab === 'validation'">
-            <panel-log-window v-bind:panel-size="panelSize" v-bind:log="validationLog" v-if="validationLog.length > 0"/>
-            <div id="validation-placeholder" class="panel-placeholder" v-else>
-              Validation log output will show here.
-            </div>
-          </div>
-          <div class="status-panel log-container" v-show="tab === 'ingest'">
+          <div class="status-panel log-container" v-show="tab === 'log'">
             <panel-log-window v-bind:panel-size="panelSize" v-bind:log="log"/>
-<!--            <panel-log-window v-bind:log="log" v-if="log.length > 0"/>-->
-<!--            <div class="panel-placeholder" v-else>-->
-<!--              Ingest log output will show here.-->
-<!--            </div>-->
           </div>
         </div>
       </div>

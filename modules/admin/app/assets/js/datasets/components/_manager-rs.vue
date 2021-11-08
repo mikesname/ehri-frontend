@@ -45,7 +45,7 @@ export default {
   },
   methods: {
     doSync: async function (opts: ResourceSyncConfig) {
-      this.tab = "sync";
+      this.tab = "log";
       this.waiting = true;
       this.syncConfig = opts;
 
@@ -66,7 +66,7 @@ export default {
       let jobId = this.getQueryParam(window.location.search, this.urlKey);
       if (jobId) {
         try {
-          this.tab = "sync";
+          this.tab = "log";
           await this.monitor(this.config.monitorUrl(jobId), jobId, this.refresh);
           this.$emit("updated");
         } finally {
@@ -165,22 +165,16 @@ export default {
       <div id="rs-status-panels" class="bottom-panel">
         <ul class="status-panel-tabs nav nav-tabs">
           <li class="nav-item">
+            <a href="#" class="nav-link" v-bind:class="{'active': tab === 'log'}"
+               v-on:click.prevent="tab = 'log'">
+              Info
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="#" class="nav-link" v-bind:class="{'active': tab === 'preview'}"
                v-on:click.prevent="tab = 'preview'">
               File Preview
               <template v-if="previewing"> - {{ decodeURI(previewing.key) }}</template>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link" v-bind:class="{'active': tab === 'validation'}"
-               v-on:click.prevent="tab = 'validation'">
-              Validation Log
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link" v-bind:class="{'active': tab === 'sync'}"
-               v-on:click.prevent="tab = 'sync'">
-              Sync Log
             </a>
           </li>
           <li>
@@ -210,18 +204,8 @@ export default {
               No file selected.
             </div>
           </div>
-          <div class="status-panel log-container" v-show="tab === 'validation'">
-            <panel-log-window v-bind:panel-size="panelSize" v-bind:log="validationLog" v-if="validationLog.length > 0"/>
-            <div  class="panel-placeholder" v-else>
-              Validation log output will show here.
-            </div>
-          </div>
-          <div class="status-panel log-container" v-show="tab === 'sync'">
+          <div class="status-panel log-container" v-show="tab === 'log'">
             <panel-log-window v-bind:panel-size="panelSize" v-bind:log="log"/>
-<!--            <panel-log-window v-bind:log="log" v-if="log.length > 0"/>-->
-<!--            <div class="panel-placeholder" v-else>-->
-<!--              Sync log output will show here.-->
-<!--            </div>-->
           </div>
         </div>
       </div>
