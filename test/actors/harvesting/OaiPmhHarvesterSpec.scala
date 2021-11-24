@@ -7,7 +7,7 @@ import akka.actor.Props
 import config.ServiceConfig
 import helpers.IntegrationTestRunner
 import mockdata.adminUserProfile
-import models.{OaiPmhConfig, OaiPmhConfigAuth, UserProfile}
+import models.{OaiPmhConfig, BasicAuthConfig, UserProfile}
 import play.api.{Application, Configuration}
 import services.harvesting.OaiPmhClient
 import services.storage.FileStorage
@@ -27,7 +27,7 @@ class OaiPmhHarvesterSpec extends IntegrationTestRunner {
     OaiPmhHarvestJob("r1", datasetId, jobId, OaiPmhHarvestData(
       // where we're harvesting from:
       config = OaiPmhConfig(s"${serviceConfig.baseUrl}/oaipmh", "ead", Some("nl:r1"),
-        serviceConfig.credentials.map { case (u, pw) => OaiPmhConfigAuth(u, pw)}),
+        serviceConfig.credentials.map { case (u, pw) => BasicAuthConfig(u, pw)}),
       prefix = "oaipmh/r1/"
     ))
   }
