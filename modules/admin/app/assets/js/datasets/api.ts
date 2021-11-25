@@ -10,7 +10,7 @@ import {
   ImportConfig, ImportDataset, ImportDatasetInfo, ImportLog, ImportLogSummary,
   JobMonitor,
   OaiPmhConfig, RepositoryDatasets,
-  ResourceSyncConfig, Snapshot, SnapshotInfo, ValidationResult
+  ResourceSyncConfig, Snapshot, SnapshotInfo, UrlSetConfig, ValidationResult
 } from "./types";
 
 
@@ -126,8 +126,32 @@ export class DatasetManagerApi {
     return apiCall(this.service.ResourceSyncConfigs.test(this.repoId, ds), config);
   }
 
-  cleanSyncConfig(ds: string, config: ResourceSyncConfig): Promise<string[]> {
-    return apiCall(this.service.ResourceSyncConfigs.clean(this.repoId, ds), config);
+  cleanSyncConfig(ds: string, config: UrlSetConfig): Promise<string[]> {
+    return apiCall(this.service.UrlSetConfigs.clean(this.repoId, ds), config);
+  }
+
+  dl(ds: string, config: UrlSetConfig): Promise<JobMonitor> {
+    return apiCall(this.service.UrlSetConfigs.sync(this.repoId, ds), config);
+  }
+
+  getUrlSetConfig(ds: string): Promise<UrlSetConfig | null> {
+    return apiCall(this.service.UrlSetConfigs.get(this.repoId, ds));
+  }
+
+  saveUrlSetConfig(ds: string, config: UrlSetConfig): Promise<UrlSetConfig> {
+    return apiCall(this.service.UrlSetConfigs.save(this.repoId, ds), config);
+  }
+
+  deleteUrlSetConfig(ds: string): Promise<void> {
+    return apiCall(this.service.UrlSetConfigs.delete(this.repoId, ds));
+  }
+
+  testUrlSetConfig(ds: string, config: UrlSetConfig): Promise<{ok: true}> {
+    return apiCall(this.service.UrlSetConfigs.test(this.repoId, ds), config);
+  }
+
+  cleanUrlSetConfig(ds: string, config: UrlSetConfig): Promise<string[]> {
+    return apiCall(this.service.UrlSetConfigs.clean(this.repoId, ds), config);
   }
 
   getOaiPmhConfig(ds: string): Promise<OaiPmhConfig | null> {

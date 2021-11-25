@@ -4,10 +4,9 @@ import actors.LongRunningJob.Cancel
 import actors.harvesting.Harvester.HarvestJob
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorLogging, ActorRef}
-import akka.http.scaladsl.model.Uri
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import models.{UrlSetConfig, UserProfile}
+import models.{UrlNameMap, UrlSetConfig, UserProfile}
 import play.api.http.HeaderNames
 import play.api.libs.ws.WSClient
 import services.storage.FileStorage
@@ -21,7 +20,7 @@ object UrlSetHarvester {
 
   // Internal message we send ourselves
   sealed trait UrlSetAction
-  private case class Fetch(urls: List[String], count: Int, fresh: Int) extends UrlSetAction
+  private case class Fetch(urls: List[UrlNameMap], count: Int, fresh: Int) extends UrlSetAction
 
   /**
     * A description of an URL set harvest task.
@@ -54,8 +53,8 @@ case class UrlSetHarvester (client: WSClient, storage: FileStorage)(
       val msgTo = sender()
       context.become(running(job, msgTo, 0, 0, LocalDateTime.now()))
       msgTo ! Starting
-      msgTo ! ToDo(job.data.config.set.size)
-      self ! Fetch(job.data.config.set.toList, 0, 0)
+      msgTo ! ToDo(job.data.config.urlMap.size)
+      self ! Fetch(job.data.config.urls.toList, 0, 0)
   }
 
 
@@ -88,20 +87,20 @@ case class UrlSetHarvester (client: WSClient, storage: FileStorage)(
       log.error(s"Unexpected message: $m: ${m.getClass}")
   }
 
-  private def copyItem(job: UrlSetJob, item: String): Future[(String, Boolean)] = {
+  private def copyItem(job: UrlSetJob, item: UrlNameMap): Future[(String, Boolean)] = {
     // Strip the hostname from the file URL but use the
     // rest of the path
-    val name = Uri(item).path.dropChars(1)
+    val name = item.name
     val path = job.data.prefix + name
 
-    client.url(item).head().flatMap { headReq =>
+    client.url(item.url).head().flatMap { headReq =>
       val etag: Option[String] = headReq.headerValues(HeaderNames.ETAG).headOption
       val ct: Option[String] = headReq.headerValues(HeaderNames.CONTENT_TYPE).headOption
 
       // file metadata
       val meta = Map(
         "source" -> "download",
-        "download-endpoint" -> item,
+        "download-endpoint" -> item.url,
         "download-job-id" -> job.jobId,
       ) ++ etag.map(tag => "hash" -> tag)
 
@@ -117,7 +116,7 @@ case class UrlSetHarvester (client: WSClient, storage: FileStorage)(
         // Either the hash doesn't match or the file's not there yet
         // so upload it now...
         case _ =>
-          val bytes: Future[Source[ByteString, _]] = client.url(item).get().map(r => r.bodyAsSource)
+          val bytes: Future[Source[ByteString, _]] = client.url(item.url).get().map(r => r.bodyAsSource)
           bytes.flatMap { src =>
             storage.putBytes(
               path,

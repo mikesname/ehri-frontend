@@ -1,8 +1,5 @@
 package models
 
-import play.api.data.Form
-import play.api.data.Forms._
-
 
 case class OaiPmhConfig(
   url: String,
@@ -29,11 +26,4 @@ object OaiPmhConfig {
 
   implicit val _writes: Writes[OaiPmhConfig] = Json.writes[OaiPmhConfig]
   implicit val _format: Format[OaiPmhConfig] = Format(_reads, _writes)
-
-  val form: Form[OaiPmhConfig] = Form(mapping(
-    URL -> nonEmptyText.verifying("errors.invalidUrl", forms.isValidUrl),
-    METADATA_FORMAT -> nonEmptyText,
-    SET -> optional(text).transform[Option[String]](_.filterNot(_.trim.isEmpty), identity),
-    AUTH -> optional(BasicAuthConfig.form.mapping)
-  )(OaiPmhConfig.apply)(OaiPmhConfig.unapply))
 }

@@ -1,42 +1,32 @@
 package models
 
-import play.api.data.Form
-import play.api.data.Forms.{mapping, nonEmptyText, optional}
+import play.api.libs.json.JsonConfiguration.Aux
+import play.api.libs.json.JsonNaming.SnakeCase
+
+case class UrlNameMap(url: String, name: String)
 
 case class UrlSetConfig(
-  urls: String,
-  nameRe: Option[String],
+  urlMap: Map[String, String],
   auth: Option[BasicAuthConfig] = None,
 ) {
-  def set: Set[String] = urls.trim.split('\n').toSet
+  def urls: Seq[UrlNameMap] = urlMap.toSeq
+    .map { case (url, name) => UrlNameMap(url, name)}
 }
 
 object UrlSetConfig {
-  val URLS = "urls"
-  val NAME_RE = "name_regex"
+  val URLS = "urlMap"
   val AUTH = "auth"
 
   import play.api.libs.functional.syntax._
   import play.api.libs.json._
 
   implicit val _reads: Reads[UrlSetConfig] = (
-    (__ \ URLS).read[String] and
-    (__ \ NAME_RE).readNullable[String] and
+    (__ \ URLS).read[Map[String, String]] and
     (__ \ AUTH).readNullable[BasicAuthConfig]
   ) (UrlSetConfig.apply _)
 
   implicit val _writes: Writes[UrlSetConfig] = Json.writes[UrlSetConfig]
   implicit val _format: Format[UrlSetConfig] = Format(_reads, _writes)
-
-  val form: Form[UrlSetConfig] = Form(mapping(
-    URLS -> nonEmptyText.verifying("errors.invalidUrl", _.split('\n').forall(s => forms.isValidUrl(s.trim))),
-    NAME_RE -> optional(nonEmptyText),
-    AUTH -> optional(BasicAuthConfig.form.mapping), // TODO: ensure this compiles
-  )(UrlSetConfig.apply)(UrlSetConfig.unapply).verifying(config => {
-    // FIXME: ensure URLs end in unique file names or can be transformed thus
-    true
-  }))
-
 }
 
 

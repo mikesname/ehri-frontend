@@ -587,6 +587,41 @@ $active-table-row: #e7f1ff;
   }
 }
 
+.urlset-editor {
+  @extend %expanding-column;
+  border: 1px solid $ehri-border-gray;
+}
+
+.urlset-editor-data {
+  @extend %expanding-column;
+  @extend %overflow-contents;
+  overflow-x: unset;
+}
+
+.urlset-editor-toolbar {
+  display: flex;
+  justify-content: right;
+}
+
+.urlset-editor-toolbar-info {
+  align-self: center;
+  margin-left: auto;
+  font-size: $font-size-xs;
+  color: $text-muted;
+  padding: $margin-xs;
+}
+
+.urlset-editor-mappings {
+  font-size: $font-size-xs;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  .selected {
+    background-color: lighten($blue, 60%);
+  }
+}
+
 .file-list-container {
   @extend %expanding-column;
   @extend %overflow-contents;

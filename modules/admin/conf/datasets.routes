@@ -51,6 +51,13 @@ DELETE      /api/:id/rs/:ds/config                        @controllers.datasets.
 POST        /api/:id/rs/:ds/clean                         @controllers.datasets.ResourceSyncConfigs.clean(id: String, ds: String)
 POST        /api/:id/rs/:ds                               @controllers.datasets.ResourceSyncConfigs.sync(id: String, ds: String)
 
+GET         /api/:id/urlset/:ds/config                        @controllers.datasets.UrlSetConfigs.get(id: String, ds: String)
+PUT         /api/:id/urlset/:ds/config                        @controllers.datasets.UrlSetConfigs.save(id: String, ds: String)
+POST        /api/:id/urlset/:ds/config                        @controllers.datasets.UrlSetConfigs.test(id: String, ds: String)
+DELETE      /api/:id/urlset/:ds/config                        @controllers.datasets.UrlSetConfigs.delete(id: String, ds: String)
+POST        /api/:id/urlset/:ds/clean                         @controllers.datasets.UrlSetConfigs.clean(id: String, ds: String)
+POST        /api/:id/urlset/:ds                               @controllers.datasets.UrlSetConfigs.sync(id: String, ds: String)
+
 GET         /api/:id/import/:ds/config                    @controllers.datasets.ImportConfigs.get(id: String, ds: String)
 PUT         /api/:id/import/:ds/config                    @controllers.datasets.ImportConfigs.save(id: String, ds: String)
 DELETE      /api/:id/import/:ds/config                    @controllers.datasets.ImportConfigs.delete(id: String, ds: String)
