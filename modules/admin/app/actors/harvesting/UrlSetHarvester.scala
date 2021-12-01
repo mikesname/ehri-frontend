@@ -66,9 +66,7 @@ case class UrlSetHarvester (client: WSClient, storage: FileStorage)(
       context.become(running(job, msgTo, count, fresh, start))
 
       copyItem(job, item).map { case (name, isFresh) =>
-        if (isFresh) {
-          msgTo ! DoneFile(name)
-        }
+        msgTo ! DoneFile(name)
         Fetch(rest, count + 1, if (isFresh) fresh + 1 else fresh)
       }.pipeTo(self)
 
@@ -105,7 +103,6 @@ case class UrlSetHarvester (client: WSClient, storage: FileStorage)(
       ) ++ etag.map(tag => "hash" -> tag)
 
       log.debug(s"Item: $meta")
-
 
       storage.info(path).flatMap {
 
