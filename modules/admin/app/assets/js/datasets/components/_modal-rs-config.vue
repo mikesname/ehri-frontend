@@ -32,13 +32,13 @@ export default {
   methods: {
     save: function() {
       this.$emit("saving");
-      this.api.saveSyncConfig(this.datasetId, {url: this.url, filter: this.filter})
+      this.api.saveHarvestConfig(this.datasetId, {url: this.url, filter: this.filter})
           .then(data => this.$emit("saved-config", data))
           .catch(error => this.$emit("error", "Error saving RS config", error));
     },
     testEndpoint: function() {
       this.testing = true;
-      this.api.testSyncConfig(this.datasetId, {url: this.url, filter: this.filter})
+      this.api.testHarvestConfig(this.datasetId, {url: this.url, filter: this.filter})
           .then(() => {
             this.tested = true;
             this.error = null;

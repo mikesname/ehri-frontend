@@ -55,13 +55,13 @@ export default {
   methods: {
     save: function() {
       this.$emit("saving");
-      this.api.saveUrlSetConfig(this.datasetId, {urlMap: this.urlMap, auth: null})
+      this.api.saveHarvestConfig(this.datasetId, {urlMap: this.urlMap, auth: null})
           .then(data => this.$emit("saved-config", {...data, auth: this.auth}))
           .catch(error => this.$emit("error", "Error saving URL set config", error));
     },
     testEndpoint: function() {
       this.testing = true;
-      this.api.testUrlSetConfig(this.datasetId, {url: this.url, filter: this.filter})
+      this.api.testHarvestConfig(this.datasetId, {url: this.url, filter: this.filter})
           .then(() => {
             this.tested = true;
             this.error = null;
@@ -77,7 +77,7 @@ export default {
     },
     cleanEndpoint: function() {
       this.cleaning = true;
-      this.api.cleanUrlSetConfig(this.datasetId, {url: this.url, filter: this.filter})
+      this.api.cleanHarvestConfig(this.datasetId, {url: this.url, filter: this.filter})
           .then(orphans => this.orphanCheck = orphans)
           .catch(e => this.error = e.message)
           .finally(() => this.cleaning = false);

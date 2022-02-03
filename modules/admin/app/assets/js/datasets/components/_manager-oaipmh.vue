@@ -74,7 +74,7 @@ export default {
       }
     },
     loadConfig: async function() {
-      this.opts = await this.api.getOaiPmhConfig(this.datasetId);
+      this.opts = await this.api.getHarvestConfig(this.datasetId);
     },
   },
   created: function () {

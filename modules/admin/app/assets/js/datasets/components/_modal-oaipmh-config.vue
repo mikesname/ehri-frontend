@@ -44,13 +44,13 @@ export default {
     save: function() {
       this.$emit("saving");
       // auth data is not saved on the server, so don't send it...
-      this.api.saveOaiPmhConfig(this.datasetId, {url: this.url, format: this.format, set: this.set, auth: null})
+      this.api.saveHarvestConfig(this.datasetId, {url: this.url, format: this.format, set: this.set, auth: null})
           .then(data => this.$emit("saved-config", {...data, auth: this.auth}, !this.noResume))
           .catch(error => this.$emit("error", "Error saving OAI-PMH config", error));
     },
     testEndpoint: function() {
       this.testing = true;
-      this.api.testOaiPmhConfig(this.datasetId, {url: this.url, format: this.format, set: this.set, auth: this.auth})
+      this.api.testHarvestConfig(this.datasetId, {url: this.url, format: this.format, set: this.set, auth: this.auth})
           .then( r => {
             this.tested = !!r.name;
             this.error = null;

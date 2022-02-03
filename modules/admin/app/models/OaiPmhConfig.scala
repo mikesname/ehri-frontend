@@ -6,7 +6,9 @@ case class OaiPmhConfig(
   format: String,
   set: Option[String] = None,
   auth: Option[BasicAuthConfig] = None
-)
+) extends HarvestConfig {
+  override val src: ImportDataset.Src.Value = ImportDataset.Src.OaiPmh
+}
 
 object OaiPmhConfig {
   final val URL = "url"

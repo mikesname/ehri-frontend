@@ -36,6 +36,8 @@ export interface UrlSetConfig {
   auth?: BasicAuthConfig
 }
 
+export type HarvestConfig = OaiPmhConfig | ResourceSyncConfig | UrlSetConfig
+
 export interface ImportConfig {
   allowUpdates: boolean,
   useSourceId: boolean,
@@ -57,6 +59,7 @@ export interface ConvertSpec {
 }
 
 export type ConvertConfig = TransformationList | ConvertSpec;
+
 
 export interface JobMonitor {
   jobId: string,

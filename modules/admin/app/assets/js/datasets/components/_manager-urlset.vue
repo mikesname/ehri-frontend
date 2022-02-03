@@ -50,7 +50,7 @@ export default {
       this.syncConfig = opts;
 
       try {
-        let {url, jobId} = await this.api.dl(this.datasetId, opts);
+        let {url, jobId} = await this.api.harvest(this.datasetId, opts);
         this.showOptions = false;
         this.replaceUrlState(this.urlKey, jobId);
         await this.monitor(url, jobId, this.refresh);
@@ -75,7 +75,7 @@ export default {
       }
     },
     loadConfig: async function () {
-      this.syncConfig = await this.api.getUrlSetConfig(this.datasetId);
+      this.syncConfig = await this.api.getHarvestConfig(this.datasetId);
     },
   },
   created: function () {
