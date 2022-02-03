@@ -13,10 +13,10 @@ import controllers.base.AdminController
 import controllers.generic.Update
 import models.HarvestEvent.HarvestEventType
 import models._
-import play.api.http.HeaderNames
+import play.api.http.{HeaderNames, MimeTypes}
 import play.api.i18n.Messages
 import play.api.libs.json.Json
-import play.api.libs.ws.{WSAuthScheme, WSClient}
+import play.api.libs.ws.{WSAuthScheme, WSClient, WSRequest}
 import play.api.mvc._
 import services.datasets.ImportDatasetService
 import services.harvesting._
@@ -42,6 +42,8 @@ case class HarvestConfigs @Inject()(
   ws: WSClient,
   harvestEvents: HarvestEventService,
 )(implicit mat: Materializer) extends AdminController with StorageHelpers with Update[Repository] {
+
+  val ALLOWED_TYPES = Seq("text/xml", "application/xml")
 
   case class DatasetRequest[A](
     item: Repository,
@@ -106,6 +108,7 @@ case class HarvestConfigs @Inject()(
     withCheckedPayload(request.body, request.dataset) {
       case c: OaiPmhConfig => testOaiPmh(c)
       case c: ResourceSyncConfig => testRs(c)
+      case c: UrlSetConfig => testUrlSet(c)
       case _ => immediate(BadRequest(Json.obj("error" -> s"unsupported config type: ${request.body.src}")))
     }
   }
@@ -134,14 +137,33 @@ case class HarvestConfigs @Inject()(
     config.auth.fold(wSRequest) { auth =>
       wSRequest.withAuth(auth.username, auth.password, WSAuthScheme.BASIC)
     }.head().map { r =>
-      if (r.status != 200)
-        BadRequest(Json.obj("error" -> s"Unexpected status: ${r.status}"))
-      else if (r.header(HeaderNames.CONTENT_LENGTH).map(_.toLong).getOrElse(0L) <= 0)
-        BadRequest(Json.obj("error" -> "Changelist is of zero or unknown length"))
-      else if (!r.header(HeaderNames.CONTENT_TYPE).forall(s => s == "text/xml" || s == "application/xml"))
-        BadRequest(Json.obj("error" -> s"Unexpected content type"))
-      else
-        Ok(Json.obj("ok" -> true))
+      checkRemoteFile(r).fold(Ok(Json.obj("ok" -> true))) { err =>
+        BadRequest(Json.obj("error" -> err))
+      }
+    }
+  }
+
+  def testUrlSet(config: UrlSetConfig): Future[Result] = {
+    def req(url: String): Future[Option[(String, String)]] = {
+      val wsRequest = ws.url(url)
+      config.auth.fold(wsRequest) { auth =>
+        wsRequest.withAuth(auth.username, auth.password, WSAuthScheme.BASIC)
+      }.head().map{ r =>
+        checkRemoteFile(r).map(err => url -> err)
+      }
+    }
+
+    val errs: Seq[Future[Option[(String, String)]]] = config.urls.map(um => req(um.url))
+    val s: Future[Option[String]] = Future.sequence(errs).map { errs =>
+      errs.collectFirst {
+        case Some((url, err)) => s"$url: $err"
+      }
+    }
+
+    s.map { errOpt =>
+      errOpt.fold(Ok(Json.obj("ok" -> true))) { err =>
+        BadRequest(Json.obj("error" -> err))
+      }
     }
   }
 
@@ -225,5 +247,15 @@ case class HarvestConfigs @Inject()(
 
     for { stored <- storedF; remote <- remoteF}
       yield stored -- remote
+  }
+
+  private def checkRemoteFile(r: WSRequest#Response): Option[String] = {
+    if (r.status != 200)
+      Some(s"Unexpected HTTP response status code: ${r.status}")
+    else if (r.header(HeaderNames.CONTENT_LENGTH).map(_.toLong).getOrElse(0L) <= 0)
+      Some("Changelist is of zero or unknown length")
+    else if (!ALLOWED_TYPES.exists(r.contentType.toLowerCase.startsWith)) {
+      Some(s"Unknown or unexpected content type: '${r.contentType}'")
+    } else None
   }
 }

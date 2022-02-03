@@ -9,14 +9,14 @@ export default {
   props: {
     waiting: Boolean,
     datasetId: String,
-    syncConfig: Object,
+    opts: Object,
     api: DatasetManagerApi,
     config: Object,
   },
   data: function() {
     return {
-      url: this.syncConfig ? this.syncConfig.url : null,
-      filter: this.syncConfig ? this.syncConfig.filter : null,
+      url: this.opts ? this.opts.url : null,
+      filter: this.opts ? this.opts.filter : null,
       tested: null,
       testing: false,
       cleaning: false,
@@ -54,7 +54,7 @@ export default {
     },
     cleanEndpoint: function() {
       this.cleaning = true;
-      this.api.cleanSyncConfig(this.datasetId, {url: this.url, filter: this.filter})
+      this.api.cleanHarvestConfig(this.datasetId, {url: this.url, filter: this.filter})
           .then(orphans => this.orphanCheck = orphans)
           .catch(e => this.error = e.message)
           .finally(() => this.cleaning = false);
@@ -70,7 +70,7 @@ export default {
     }
   },
   watch: {
-    syncConfig: function(newValue) {
+    opts: function(newValue) {
       this.url = newValue ? newValue.url : null;
       this.filter = newValue ? newValue.filter : null;
     }

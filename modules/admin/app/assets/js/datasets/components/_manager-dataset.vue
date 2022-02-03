@@ -1,11 +1,9 @@
 <script lang="ts">
 
 import ModalDatasetConfig from './_modal-dataset-config';
-import ManagerOaipmh from './_manager-oaipmh';
 import ManagerUpload from './_manager-upload';
 import ManagerIngest from './_manager-ingest';
-import ManagerRs from './_manager-rs';
-import ManagerUrlset from './_manager-urlset';
+import ManagerHarvest from './_manager-harvest';
 import ManagerConvert from './_manager-convert.vue';
 import ManagerSnapshots from "./_manager-snapshots.vue";
 
@@ -17,7 +15,7 @@ import {DatasetManagerApi} from "../api";
 import _merge from 'lodash/merge';
 
 export default {
-  components: {ManagerSnapshots, ModalDatasetConfig, ManagerOaipmh, ManagerUpload, ManagerIngest, ManagerRs, ManagerUrlset, ManagerConvert},
+  components: {ManagerSnapshots, ModalDatasetConfig, ManagerHarvest, ManagerUpload, ManagerIngest, ManagerConvert},
   mixins: [MixinUtil, MixinError],
   props: {
     config: Object,
@@ -86,8 +84,8 @@ export default {
         </a>
         <a v-if="dataset.src === 'urlset'" href="#tab-input" class="nav-link" v-bind:class="{active: tab === 'input'}"
            v-on:click.prevent="switchTab('input')">
-          <i class="fa fw-fw fa-clone"></i>
-          Downloads
+          <i class="fa fw-fw fa-globe"></i>
+          URL Set
         </a>
         <a v-if="dataset.src === 'upload'" href="#tab-input" class="nav-link" v-bind:class="{active: tab === 'input'}"
            v-on:click.prevent="switchTab('input')">
@@ -145,36 +143,18 @@ export default {
       </li>
     </ul>
     <div id="tab-input" class="stage-tab" v-show="tab === 'input'">
-      <manager-oaipmh
-          v-if="dataset.src === 'oaipmh'"
+
+      <manager-harvest
+          v-if="dataset.src !== 'upload'"
           v-bind:dataset-id="dataset.id"
+          v-bind:dataset-type="dataset.src"
           v-bind:dataset-content-type="dataset.contentType"
           v-bind:fileStage="config.input"
           v-bind:config="config"
           v-bind:active="tab === 'input'"
           v-bind:api="api"
           v-on:updated="$emit('refresh-stats')"
-          v-on:error="showError"  />
-      <manager-rs
-          v-else-if="dataset.src === 'rs'"
-          v-bind:dataset-id="dataset.id"
-          v-bind:dataset-content-type="dataset.contentType"
-          v-bind:fileStage="config.input"
-          v-bind:config="config"
-          v-bind:active="tab === 'input'"
-          v-bind:api="api"
-          v-on:updated="$emit('refresh-stats')"
-          v-on:error="showError"  />
-      <manager-urlset
-          v-else-if="dataset.src === 'urlset'"
-          v-bind:dataset-id="dataset.id"
-          v-bind:dataset-content-type="dataset.contentType"
-          v-bind:fileStage="config.input"
-          v-bind:config="config"
-          v-bind:active="tab === 'input'"
-          v-bind:api="api"
-          v-on:updated="$emit('refresh-stats')"
-          v-on:error="showError"  />
+          v-on:error="showError"/>
       <manager-upload
           v-else
           v-bind:dataset-id="dataset.id"

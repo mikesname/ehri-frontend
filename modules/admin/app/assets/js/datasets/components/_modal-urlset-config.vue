@@ -12,14 +12,14 @@ export default {
   props: {
     waiting: Boolean,
     datasetId: String,
-    syncConfig: Object,
+    opts: Object,
     api: DatasetManagerApi,
     config: Object,
   },
   data: function() {
     return {
-      urlMap: this.syncConfig ? this.syncConfig.urlMap : null,
-      filter: this.syncConfig ? this.syncConfig.filter : null,
+      urlMap: this.opts ? this.opts.urlMap : null,
+      filter: this.opts ? this.opts.filter : null,
       tested: null,
       testing: false,
       cleaning: false,
@@ -61,7 +61,7 @@ export default {
     },
     testEndpoint: function() {
       this.testing = true;
-      this.api.testHarvestConfig(this.datasetId, {url: this.url, filter: this.filter})
+      this.api.testHarvestConfig(this.datasetId, {urlMap: this.urlMap, auth: this.auth})
           .then(() => {
             this.tested = true;
             this.error = null;
@@ -77,7 +77,7 @@ export default {
     },
     cleanEndpoint: function() {
       this.cleaning = true;
-      this.api.cleanHarvestConfig(this.datasetId, {url: this.url, filter: this.filter})
+      this.api.cleanHarvestConfig(this.datasetId, {urlMap: this.urlMap, auth: null})
           .then(orphans => this.orphanCheck = orphans)
           .catch(e => this.error = e.message)
           .finally(() => this.cleaning = false);
@@ -93,7 +93,7 @@ export default {
     }
   },
   watch: {
-    syncConfig: function(newValue) {
+    opts: function(newValue) {
       this.urlMap = newValue ? newValue.urlMap : null;
     }
   },
@@ -129,7 +129,6 @@ export default {
         <label class="form-label">
           URL map
         </label>
-<!--        <editor-urlset v-model.lazy="urlMapText"/>-->
         <textarea v-model="urlMapText" class="form-control"></textarea>
       </div>
       <div id="endpoint-errors">

@@ -8,14 +8,15 @@ export default {
   props: {
     waiting: Boolean,
     datasetId: String,
-    config: Object,
+    opts: Object,
     api: DatasetManagerApi,
+    config: Object,
   },
   data: function() {
     return {
-      url: this.config ? this.config.url : null,
-      format: this.config ? this.config.format : null,
-      set: this.config ? this.config.set : null,
+      url: this.opts ? this.opts.url : null,
+      format: this.opts ? this.opts.format : null,
+      set: this.opts ? this.opts.set : null,
       tested: null,
       testing: false,
       error: null,
@@ -66,7 +67,7 @@ export default {
     }
   },
   watch: {
-    config: function(newValue) {
+    opts: function(newValue) {
       this.url = newValue ? newValue.url : null;
       this.format = newValue ? newValue.format : null;
       this.set = newValue ? newValue.set : null;
