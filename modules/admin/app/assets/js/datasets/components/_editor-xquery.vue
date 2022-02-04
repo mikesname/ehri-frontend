@@ -111,7 +111,7 @@ export default {
         <input readonly disabled type="text" value="source-node" @click="selected = -1"/>
         <input readonly disabled type="text" value="value" @click="selected = -1"/>
       </div>
-      <div class="tabular-editor-mappings">
+      <div class="tabular-editor-mappings tabular-editor-mappings">
         <template v-for="(mapping, row) in mappings">
           <input
               v-for="col in [0, 1, 2, 3]"

@@ -103,7 +103,7 @@ export default {
 </script>
 
 <template>
-  <modal-window v-on:close="$emit('close')">
+  <modal-window v-bind:resizable="true" v-on:close="$emit('close')">
     <template v-slot:title>URL Set Configuration</template>
 
     <modal-alert
@@ -126,19 +126,14 @@ export default {
       </div>
     </modal-alert>
 
-    <div class="options-form">
-      <div class="form-group">
-        <label class="form-label sr-only">
-          URL map
-        </label>
-        <editor-urlset v-model.lazy="urlMapText"/>
-      </div>
-      <div id="endpoint-errors">
-        <span v-if="tested === null">&nbsp;</span>
-        <span v-else-if="tested" class="text-success">No errors detected</span>
-        <span v-else-if="error" class="text-danger">{{error}}</span>
-        <span v-else class="text-danger">Test unsuccessful</span>
-      </div>
+    <div class="urlset-editor-input">
+      <editor-urlset v-model.lazy="urlMapText"/>
+    </div>
+    <div id="endpoint-errors">
+      <span v-if="tested === null">&nbsp;</span>
+      <span v-else-if="tested" class="text-success">No errors detected</span>
+      <span v-else-if="error" class="text-danger">{{error}}</span>
+      <span v-else class="text-danger">Test unsuccessful</span>
     </div>
 
     <template v-slot:footer>
