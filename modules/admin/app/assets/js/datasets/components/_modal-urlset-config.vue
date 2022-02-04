@@ -33,6 +33,7 @@ export default {
   computed: {
     isValidConfig: function() {
       return this.urlMap !== null
+          && this.urlMap.length > 0
           && (!this.authParams || (this.authParams && this.authUser !== "" && this.authPass !== ""));
     },
     auth: function() {
@@ -50,7 +51,7 @@ export default {
       set: function(urlMapText: string): void {
         this.urlMap = urlMapText
             ? urlMapText.split('\n').map(p => p.split('\t'))
-            : {};
+            : [];
       }
     }
   },

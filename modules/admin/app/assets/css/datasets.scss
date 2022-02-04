@@ -180,11 +180,11 @@ $active-table-row: #e7f1ff;
   background-color: rgba(0, 0, 0, 0.1);
 }
 
-.modal.resizable .modal-content {
+.modal-content.resizable {
   min-height: 30rem;
 }
 
-.modal.resizable .modal-body {
+.modal-content.resizable > .modal-body {
   display: flex;
   flex-direction: column;
   flex: 1;
