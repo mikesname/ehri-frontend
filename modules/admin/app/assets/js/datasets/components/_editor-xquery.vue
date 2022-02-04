@@ -25,7 +25,7 @@ export default {
       return Vue.nextTick();
     },
     focus: function(row, col): void {
-      let elem = this.$refs[_padStart(row, 4, 0) + '-' + col];
+      let elem = this.$refs[_padStart(row, 4, '0') + '-' + col];
       if (elem && elem[0]) {
         elem[0].focus();
       }
@@ -103,15 +103,15 @@ export default {
 </script>
 
 <template>
-  <div class="xquery-editor">
-    <div class="xquery-editor-data" v-on:keyup.esc="selected = -1">
-      <div class="xquery-editor-header">
+  <div class="xquery-editor tabular-editor">
+    <div class="tabular-editor-data" v-on:keyup.esc="selected = -1">
+      <div class="tabular-editor-header">
         <input readonly disabled type="text" value="target-path" @click="selected = -1"/>
         <input readonly disabled type="text" value="target-node" @click="selected = -1"/>
         <input readonly disabled type="text" value="source-node" @click="selected = -1"/>
         <input readonly disabled type="text" value="value" @click="selected = -1"/>
       </div>
-      <div class="xquery-editor-mappings">
+      <div class="tabular-editor-mappings">
         <template v-for="(mapping, row) in mappings">
           <input
               v-for="col in [0, 1, 2, 3]"
@@ -125,7 +125,7 @@ export default {
         </template>
       </div>
     </div>
-    <div class="xquery-editor-toolbar">
+    <div class="tabular-editor-toolbar ">
       <button class="btn btn-default btn-sm" v-on:click="add">
         <i class="fa fa-plus"></i>
         Add Mapping
@@ -146,7 +146,7 @@ export default {
         <i class="fa fa-caret-down"></i>
         Move Down
       </button>
-      <div class="xquery-editor-toolbar-info">
+      <div class="tabular-editor-toolbar-info">
         Data mappings: {{mappings.length}}
       </div>
     </div>

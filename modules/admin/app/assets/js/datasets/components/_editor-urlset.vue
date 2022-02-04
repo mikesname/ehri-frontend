@@ -28,7 +28,7 @@ export default {
       return Vue.nextTick();
     },
     focus: function(row, col): void {
-      let elem = this.$refs[_padStart(row, 4, 0) + '-' + col];
+      let elem = this.$refs[_padStart(row, 4, '0') + '-' + col];
       if (elem && elem[0]) {
         elem[0].focus();
       }
@@ -55,7 +55,7 @@ export default {
       this.selected = Math.min(i, this.mappings.length - 1);
       this.update();
     },
-    deserialize: function(str): string[] {
+    deserialize: function(str): string[][] {
       if (str !== "") {
         return str
             .split("\n")
@@ -70,9 +70,19 @@ export default {
         return [];
       }
     },
-    serialize: function(mappings): string {
-      return mappings.map(m => m.join("\t"))
+    serialize: function(mappings: string[][]): string {
+      return mappings.map(m => m.join("\t")).join("\n");
     },
+    importFromClipboard: function() {
+      if (this.mappings && this.mappings.length > 0) {
+        if (!window.confirm("Overwrite existing data?")) {
+          return;
+        }
+      }
+      navigator.clipboard.readText().then(text => {
+        this.mappings = this.deserialize(text.trim());
+      });
+    }
   },
   watch: {
     value: function(newValue) {
@@ -83,9 +93,13 @@ export default {
 </script>
 
 <template>
-  <div class="urlset-editor">
-    <div class="urlset-editor-data" v-on:keyup.esc="selected = -1">
-      <div class="urlset-editor-mappings">
+  <div class="urlset-editor tabular-editor">
+    <div class="tabular-editor-data" v-on:keyup.esc="selected = -1">
+      <div class="tabular-editor-header">
+        <input readonly disabled type="text" value="url" @click="selected = -1"/>
+        <input readonly disabled type="text" value="target-filename" @click="selected = -1"/>
+      </div>
+      <div class="tabular-editor-mappings">
         <template v-for="(mapping, row) in mappings">
           <input
               v-for="col in [0, 1]"
@@ -99,20 +113,24 @@ export default {
         </template>
       </div>
     </div>
-    <div class="urlset-editor-toolbar">
+    <div class="tabular-editor-toolbar">
       <button class="btn btn-default btn-sm" v-on:click="add">
         <i class="fa fa-plus"></i>
-        Add Mapping
+        Add URL/name
       </button>
       <button class="btn btn-default btn-sm" v-bind:disabled="selected < 0" v-on:click="duplicate(selected)">
         <i class="fa fa-copy"></i>
-        Duplicate Mapping
+        Duplicate
       </button>
       <button class="btn btn-default btn-sm" v-bind:disabled="selected < 0" v-on:click="remove(selected)">
         <i class="fa fa-trash-o"></i>
-        Delete Mapping
+        Delete URL/name
       </button>
-      <div class="urlset-editor-toolbar-info">
+      <button class="btn btn-default btn-sm" v-on:click="importFromClipboard">
+        <i class="fa fa-clipboard"></i>
+        Import From Clipboard
+      </button>
+      <div class="tabular-editor-toolbar-info">
         URLs: {{mappings.length}}
       </div>
     </div>

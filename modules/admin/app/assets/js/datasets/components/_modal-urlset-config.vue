@@ -32,7 +32,7 @@ export default {
   },
   computed: {
     isValidConfig: function() {
-      return this.urlMap
+      return this.urlMap !== null
           && (!this.authParams || (this.authParams && this.authUser !== "" && this.authPass !== ""));
     },
     auth: function() {
@@ -44,11 +44,13 @@ export default {
     urlMapText: {
       get: function(): string {
         return this.urlMap
-            ? _toPairs(this.urlMap).map(pairs => pairs.join('\t')).join('\n')
+            ? this.urlMap.map(pairs => pairs.join('\t')).join('\n')
             : '';
       },
       set: function(urlMapText: string): void {
-        this.urlMap = _fromPairs(urlMapText.split('\n').map(p => p.split('\t')));
+        this.urlMap = urlMapText
+            ? urlMapText.split('\n').map(p => p.split('\t'))
+            : {};
       }
     }
   },
@@ -126,10 +128,10 @@ export default {
 
     <div class="options-form">
       <div class="form-group">
-        <label class="form-label">
+        <label class="form-label sr-only">
           URL map
         </label>
-        <textarea v-model="urlMapText" class="form-control"></textarea>
+        <editor-urlset v-model.lazy="urlMapText"/>
       </div>
       <div id="endpoint-errors">
         <span v-if="tested === null">&nbsp;</span>

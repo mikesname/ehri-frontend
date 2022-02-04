@@ -1,10 +1,11 @@
 package controllers.datasets
 
+import actors.harvesting.Harvester.HarvestJob
 import actors.harvesting.OaiPmhHarvester.{OaiPmhHarvestData, OaiPmhHarvestJob}
 import actors.harvesting.ResourceSyncHarvester.{ResourceSyncData, ResourceSyncJob}
 import actors.harvesting.UrlSetHarvester.{UrlSetData, UrlSetJob}
 import actors.harvesting.{HarvesterManager, OaiPmhHarvester, ResourceSyncHarvester, UrlSetHarvester}
-import akka.actor.{ActorContext, Props}
+import akka.actor.{ActorContext, ActorRef, Props}
 import akka.http.scaladsl.model.Uri
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
@@ -144,25 +145,41 @@ case class HarvestConfigs @Inject()(
   }
 
   def testUrlSet(config: UrlSetConfig): Future[Result] = {
-    def req(url: String): Future[Option[(String, String)]] = {
-      val wsRequest = ws.url(url)
-      config.auth.fold(wsRequest) { auth =>
-        wsRequest.withAuth(auth.username, auth.password, WSAuthScheme.BASIC)
-      }.head().map{ r =>
-        checkRemoteFile(r).map(err => url -> err)
+    // First, check for duplicate file names...
+    val names = config.urls.map(_.name).toVector
+    val dups: Seq[(Int, Int)] = for {
+      i <- names.indices
+      j <- names.indices
+      if i < j && names(i) == names(j)
+    } yield (i, j)
+    if (dups.nonEmpty) {
+      val seq = dups.map(p => s"(${p._1+1}, ${p._2+1})").mkString(", ")
+      immediate(BadRequest(Json.obj("error" -> s"Duplicate file names at rows: $seq")))
+    } else {
+      // Check all rows response to a HEAD request with the right info...
+      def req(url: String): Future[Option[(String, String)]] = try {
+        val wsRequest = ws.url(url)
+        config.auth.fold(wsRequest) { auth =>
+          wsRequest.withAuth(auth.username, auth.password, WSAuthScheme.BASIC)
+        }.head().map { r =>
+          checkRemoteFile(r).map(err => url -> err)
+        }
+      } catch {
+        // Invalid URL
+        case e: IllegalArgumentException => immediate(Some(url -> e.getMessage))
       }
-    }
 
-    val errs: Seq[Future[Option[(String, String)]]] = config.urls.map(um => req(um.url))
-    val s: Future[Option[String]] = Future.sequence(errs).map { errs =>
-      errs.collectFirst {
-        case Some((url, err)) => s"$url: $err"
+      val errs: Seq[Future[Option[(String, String)]]] = config.urls.map(um => req(um.url))
+      val s: Future[Option[String]] = Future.sequence(errs).map { errs =>
+        errs.collectFirst {
+          case Some((url, err)) => s"$url: $err"
+        }
       }
-    }
 
-    s.map { errOpt =>
-      errOpt.fold(Ok(Json.obj("ok" -> true))) { err =>
-        BadRequest(Json.obj("error" -> err))
+      s.map { errOpt =>
+        errOpt.fold(Ok(Json.obj("ok" -> true))) { err =>
+          BadRequest(Json.obj("error" -> err))
+        }
       }
     }
   }
@@ -192,13 +209,7 @@ case class HarvestConfigs @Inject()(
     val data = ResourceSyncData(endpoint, prefix = prefix(id, ds, FileStage.Input))
     val job = ResourceSyncJob(id, ds, jobId, data = data)
     val init = (context: ActorContext) => context.actorOf(Props(ResourceSyncHarvester(rsClient, storage)))
-    mat.system.actorOf(Props(HarvesterManager(job, init, harvestEvents)), jobId)
-
-    Ok(Json.obj(
-      "url" -> controllers.admin.routes.Tasks
-        .taskMonitorWS(jobId).webSocketURL(conf.https),
-      "jobId" -> jobId
-    ))
+    submitJob(jobId, job, init)
   }
 
   def harvestOaiPmh(id: String, ds: String, config: OaiPmhConfig, fromLast: Boolean)(implicit req: RequestHeader, userOpt: Option[UserProfile]): Future[Result] = {
@@ -215,13 +226,7 @@ case class HarvestConfigs @Inject()(
       val data = OaiPmhHarvestData(config, prefix = prefix(id, ds, FileStage.Input), from = last)
       val job = OaiPmhHarvestJob(id, ds, jobId, data = data)
       val init = (context: ActorContext) => context.actorOf(Props(OaiPmhHarvester(oaiPmhClient, storage)))
-      mat.system.actorOf(Props(HarvesterManager(job, init, harvestEvents)), jobId)
-
-      Ok(Json.obj(
-        "url" -> controllers.admin.routes.Tasks
-          .taskMonitorWS(jobId).webSocketURL(conf.https),
-        "jobId" -> jobId
-      ))
+      submitJob(jobId, job, init)
     }
   }
 
@@ -230,6 +235,10 @@ case class HarvestConfigs @Inject()(
     val data = UrlSetData(config, prefix = prefix(id, ds, FileStage.Input))
     val job = UrlSetJob(id, ds, jobId, data = data)
     val init = (context: ActorContext) => context.actorOf(Props(UrlSetHarvester(ws, storage)))
+    submitJob(jobId, job, init)
+  }
+
+  private def submitJob(jobId: String, job: HarvestJob, init: ActorContext => ActorRef)(implicit userOpt: Option[UserProfile], req: RequestHeader): Result =  {
     mat.system.actorOf(Props(HarvesterManager(job, init, harvestEvents)), jobId)
 
     Ok(Json.obj(

@@ -32,3 +32,10 @@ ul.form-navigation {
 input[type=file] {
   border: none;
 }
+
+// Reintroduce small buttons
+.btn-xs {
+  // line-height: ensure proper height of button next to extra small input
+  @include button-size($btn-padding-y * 0.8, $btn-padding-x * 0.8, 0.8rem, $line-height-base, $border-radius);
+}
+

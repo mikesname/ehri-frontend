@@ -32,7 +32,7 @@ export interface ResourceSyncConfig {
 }
 
 export interface UrlSetConfig {
-  urlMap: string,
+  urlMap: string[][],
   auth?: BasicAuthConfig
 }
 

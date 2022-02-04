@@ -16,7 +16,7 @@ case class SqlUrlSetConfigService @Inject()(db: Database, actorSystem: ActorSyst
   private implicit def executionContext: ExecutionContext =
     actorSystem.dispatchers.lookup("contexts.simple-db-lookups")
 
-  private implicit val parser: RowParser[UrlSetConfig] = SqlParser.scalar(fromJson[Map[String, String]])
+  private implicit val parser: RowParser[UrlSetConfig] = SqlParser.scalar(fromJson[Seq[(String, String)]])
     .map(m => UrlSetConfig(m))
 
   override def get(id: String, ds: String): Future[Option[UrlSetConfig]] = Future {

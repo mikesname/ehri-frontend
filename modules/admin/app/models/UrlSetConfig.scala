@@ -3,12 +3,18 @@ package models
 case class UrlNameMap(url: String, name: String)
 
 case class UrlSetConfig(
-  urlMap: Map[String, String],
+  urlMap: Seq[(String, String)],
   auth: Option[BasicAuthConfig] = None,
 ) extends HarvestConfig {
   override def src: ImportDataset.Src.Value = ImportDataset.Src.UrlSet
-  def urls: Seq[UrlNameMap] = urlMap.toSeq
-    .map { case (url, name) => UrlNameMap(url, name)}
+  def urls: Seq[UrlNameMap] = urlMap.map { case (url, name) => UrlNameMap(url, name)}
+
+  def names: Seq[String] = urlMap.map(_._2)
+  def duplicates: Seq[(Int, Int)] = for {
+      i <- names.indices
+      j <- names.indices
+      if i < j && names(i) == names(j)
+    } yield (i, j)
 }
 
 object UrlSetConfig {
@@ -19,7 +25,7 @@ object UrlSetConfig {
   import play.api.libs.json._
 
   implicit val _reads: Reads[UrlSetConfig] = (
-    (__ \ URLS).read[Map[String, String]] and
+    (__ \ URLS).read[Seq[(String, String)]] and
     (__ \ AUTH).readNullable[BasicAuthConfig]
   ) (UrlSetConfig.apply _)
 

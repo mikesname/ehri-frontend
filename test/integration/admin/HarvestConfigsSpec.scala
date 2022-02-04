@@ -32,7 +32,7 @@ class HarvestConfigsSpec extends IntegrationTestRunner with ResourceUtils {
     }
 
     "save urlset configs" in new DBTestApp("import-dataset-fixtures.sql") {
-      val c = UrlSetConfig(Map("https://foo.bar/baz" -> "foo.xml"))
+      val c = UrlSetConfig(Seq("https://foo.bar/baz" -> "foo.xml"))
       val r = FakeRequest(hcRoutes.save("r1", "urlset_test")).withUser(privilegedUser).callWith(Json.toJson(c))
       contentAsJson(r) must_== Json.toJson(c)
     }

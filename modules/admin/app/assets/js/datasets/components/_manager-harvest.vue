@@ -117,47 +117,46 @@ export default {
         <i class="fa fa-fw fa-spin fa-circle-o-notch"></i>
         Cancel Sync
       </button>
-
-      <template v-if="showOptions">
-        <modal-oaipmh-config
-            v-if="datasetType === 'oaipmh'"
-            v-bind:waiting="waiting"
-            v-bind:dataset-id="datasetId"
-            v-bind:opts="opts"
-            v-bind:api="api"
-            v-bind:config="config"
-            v-on:saving="waiting = true"
-            v-on:saved-config="doHarvest"
-            v-on:error="showError"
-            v-on:close="showOptions = false"/>
-        <modal-rs-config
-            v-else-if="datasetType === 'rs'"
-            v-bind:waiting="waiting"
-            v-bind:dataset-id="datasetId"
-            v-bind:opts="opts"
-            v-bind:api="api"
-            v-bind:config="config"
-            v-on:saving="waiting = true"
-            v-on:saved-config="doHarvest"
-            v-on:deleted-orphans="refresh"
-            v-on:error="showError"
-            v-on:close="showOptions = false"/>
-        <modal-urlset-config
-            v-else-if="datasetType === 'urlset'"
-            v-bind:waiting="waiting"
-            v-bind:dataset-id="datasetId"
-            v-bind:opts="opts"
-            v-bind:api="api"
-            v-bind:config="config"
-            v-on:saving="waiting = true"
-            v-on:saved-config="doHarvest"
-            v-on:deleted-orphans="refresh"
-            v-on:error="showError"
-            v-on:close="showOptions = false"/>
-      </template>
-
       <modal-info v-if="fileInfo !== null" v-bind:file-info="fileInfo" v-on:close="fileInfo = null"/>
     </div>
+
+    <template v-if="showOptions">
+      <modal-oaipmh-config
+          v-if="datasetType === 'oaipmh'"
+          v-bind:waiting="waiting"
+          v-bind:dataset-id="datasetId"
+          v-bind:opts="opts"
+          v-bind:api="api"
+          v-bind:config="config"
+          v-on:saving="waiting = true"
+          v-on:saved-config="doHarvest"
+          v-on:error="showError"
+          v-on:close="showOptions = false"/>
+      <modal-rs-config
+          v-else-if="datasetType === 'rs'"
+          v-bind:waiting="waiting"
+          v-bind:dataset-id="datasetId"
+          v-bind:opts="opts"
+          v-bind:api="api"
+          v-bind:config="config"
+          v-on:saving="waiting = true"
+          v-on:saved-config="doHarvest"
+          v-on:deleted-orphans="refresh"
+          v-on:error="showError"
+          v-on:close="showOptions = false"/>
+      <modal-urlset-config
+          v-else-if="datasetType === 'urlset'"
+          v-bind:waiting="waiting"
+          v-bind:dataset-id="datasetId"
+          v-bind:opts="opts"
+          v-bind:api="api"
+          v-bind:config="config"
+          v-on:saving="waiting = true"
+          v-on:saved-config="doHarvest"
+          v-on:deleted-orphans="refresh"
+          v-on:error="showError"
+          v-on:close="showOptions = false"/>
+    </template>
 
     <div id="harvest-panel-container" class="panel-container">
       <div class="top-panel">
