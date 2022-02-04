@@ -18,8 +18,8 @@ export default {
   methods: {
     move: function(evt: MouseEvent) {
       evt.preventDefault();
-      let parent = this.$el.getElementsByClassName("modal-dialog-centered")[0],
-          content = this.$el.getElementsByClassName("modal-content")[0],
+      let parent = this.$el.querySelector(".modal-dialog-centered"),
+          content = this.$el.querySelector(".modal-content"),
           width = window.visualViewport.width,
           height = window.visualViewport.height,
           posX = evt.clientX,
@@ -43,8 +43,8 @@ export default {
     }
   },
   mounted() {
-    let parent = this.$el.getElementsByClassName("modal-dialog-centered")[0],
-        content = this.$el.getElementsByClassName("modal-content")[0];
+    let parent = this.$el.querySelector(".modal-dialog-centered"),
+        content = this.$el.querySelector(".modal-content");
     this.minWidth = parent.clientWidth;
     this.minHeight = content.clientHeight;
   }
