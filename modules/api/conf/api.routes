@@ -8,28 +8,26 @@ GET        /                  @controllers.api.ApiHome.index()
 GET        /v1                @controllers.api.v1.ApiV1Home.index()
 
 ###
-# API V1 search
-# tags:
-#  - Search
-# responses:
-#   200:
-#     description: success
-#     content: application/vnd.api+json:
-#       schema:
-#         $ref: '#/components/schemas/models.api.v1.JsonApiV1.JsonApiListResponse'
+#   summary: Search portal items
+#   responses:
+#       200:
+#           description: success
+#           content:
+#               application/vnd.api+json:
+#                   schema:
+#                       $ref: '#/components/schemas/models.api.v1.JsonApiV1.JsonApiListResponse'
 ###
 GET        /v1/search         @controllers.api.v1.ApiV1.search(`type`: Seq[models.api.v1.ApiEntity.Value] ?= Seq.empty, params: services.search.SearchParams ?= services.search.SearchParams.empty, paging: utils.PageParams ?= utils.PageParams.empty, fields: Seq[utils.FieldFilter] ?= Seq.empty, facets: models.api.v1.ApiFacets ?= models.api.v1.ApiFacets.empty)
 
 ###
-# API V1 fetch
-# tags:
-#  - Retrieve
-# responses:
-#   200:
-#     description: success
-#     content: application/json:
-#       schema:
-#         $ref: '#/components/schemas/models.api.v1.JsonApiV1.JsonApiResponse'
+#   summary: Fetch an item by ID
+#   responses:
+#       200:
+#           description: success
+#           content:
+#               application/vnd.api+json:
+#                   schema:
+#                       $ref: '#/components/schemas/models.api.v1.JsonApiV1.JsonApiResponse'
 ###
 GET        /v1/:id            @controllers.api.v1.ApiV1.fetch(id: String, fields: Seq[utils.FieldFilter] ?= Seq.empty)
 

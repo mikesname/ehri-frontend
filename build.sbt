@@ -436,7 +436,7 @@ lazy val main = Project(appName, file("."))
   .settings(commonSettings ++ webAppSettings ++ resourceSettings)
   .settings(
     // Generate swagger docs
-    swaggerDomainNameSpaces := Seq("models.api", "services.search"),
+    swaggerDomainNameSpaces := Seq("models", "models.api", "services.search", "utils"),
     swaggerRoutesFile := file("modules/api/conf/api.routes").getName,
     swaggerV3 := true,
     swaggerPrettyJson := true,
