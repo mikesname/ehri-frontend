@@ -27,3 +27,6 @@ addSbtPlugin("io.github.givesocialmovement" % "sbt-vuefy" % "6.0.0")
 // For building command line tools...
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "1.0.0")
 
+// For Swagger API generation
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.10.4-PLAY2.8")
+

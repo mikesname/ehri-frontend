@@ -393,6 +393,8 @@ lazy val api = Project(appName + "-api", file("modules/api"))
   .enablePlugins(play.sbt.PlayScala)
   .disablePlugins(SbtVuefy, SbtConcat, SbtDigest, SbtGzip, SbtUglify, SbtSassify, AssemblyPlugin)
   .settings(libraryDependencies += "org.everit.json" % "org.everit.json.schema" % "1.3.0")
+  //.settings(libraryDependencies += "com.iheart" % "sbt-play-swagger" % "0.10.4-PLAY2.8")
+  .settings(libraryDependencies += "org.webjars" % "swagger-ui" % "3.43.0")
   .settings(commonSettings ++ webAppSettings)
   .dependsOn(portal % "test->test;compile->compile")
 
@@ -426,11 +428,20 @@ lazy val solr = Project(appName + "-solr", file("modules/solr"))
 
 lazy val main = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala)
+  .enablePlugins(SwaggerPlugin)
   .enablePlugins(LauncherJarPlugin)
   .enablePlugins(UniversalDeployPlugin)
   .disablePlugins(SbtVuefy, SbtConcat, SbtDigest, SbtGzip, SbtUglify, AssemblyPlugin)
   .settings(libraryDependencies ++= coreDependencies ++ testDependencies)
   .settings(commonSettings ++ webAppSettings ++ resourceSettings)
+  .settings(
+    // Generate swagger docs
+    swaggerDomainNameSpaces := Seq("models.api", "services.search"),
+    swaggerRoutesFile := file("modules/api/conf/api.routes").getName,
+    swaggerV3 := true,
+    swaggerPrettyJson := true,
+    // swaggerOutputTransformers := Seq(envOutputTransformer)
+  )
   .settings(
     skip in publish := false,
 
