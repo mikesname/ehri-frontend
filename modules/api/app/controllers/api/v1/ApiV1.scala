@@ -456,6 +456,29 @@ case class ApiV1 @Inject()(
     }
   }
 
+  def spec(): Action[AnyContent] = Action.apply { implicit request =>
+    Ok(
+      Json.obj(
+        "openapi" -> "3.0.0",
+        "servers" -> Json.arr(Json.obj("url" -> s"http${if (request.secure) "s" else ""}://${request.host}")),
+        "paths" -> Json.obj(
+          apiRoutes.search().url -> Json.obj(
+            apiRoutes.search().method.toLowerCase -> searchSpec
+          ),
+          apiRoutes.searchIn("ID").url.replace("ID", "{id}") -> Json.obj(
+            apiRoutes.searchIn("ID").method.toLowerCase -> searchInSpec
+          ),
+          apiRoutes.fetch("ID").url.replace("ID", "{id}") -> Json.obj(
+            apiRoutes.fetch("ID").method.toLowerCase -> fetchSpec
+          )
+        ),
+        "components" -> Json.obj(
+          "schemas" -> schemas
+        )
+      )
+    )
+  }
+
   override def authenticationFailed(request: RequestHeader): Future[Result] =
     immediate(error(UNAUTHORIZED)(request))
 

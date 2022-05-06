@@ -434,4 +434,156 @@ object JsonApiV1 {
     implicit def writes(implicit amw: Writes[Model]): Writes[JsonApiListResponse] =
       Json.writes[JsonApiListResponse]
   }
+
+  val searchParams: JsArray = Json.arr(
+    Json.obj(
+      "in" -> "query",
+      "name" -> "type",
+      "schema" -> Json.obj(
+        "type" -> "string",
+        "enum" -> ApiEntity.values.toSeq.sorted,
+      ),
+      "required" -> false,
+      "description" -> "the search query",
+    ),
+    Json.obj(
+      "in" -> "query",
+      "name" -> "q",
+      "schema" -> Json.obj(
+        "type" -> "string",
+      ),
+      "required" -> false,
+      "description" -> "the search query"
+    ),
+    Json.obj(
+      "in" -> "query",
+      "name" -> "page",
+      "schema" -> Json.obj(
+        "type" -> "integer",
+      ),
+      "required" -> false,
+      "description" -> "the page of items"
+    )
+  )
+
+  val fetchParams: JsArray = Json.arr(
+    Json.obj(
+      "in" -> "path",
+      "name" -> "id",
+      "schema" -> Json.obj(
+        "type" -> "string",
+      ),
+      "required" -> true,
+      "description" -> "the item's id",
+    )
+  )
+
+  val schemas: JsObject = Json.obj(
+    "JsonAPIListResponse" -> Json.obj(
+      "properties" -> Json.obj(
+        "data" -> Json.obj(
+          "type" -> "array"
+        ),
+        "included" -> Json.obj(
+          "type" -> "array",
+          "nullable" -> true
+        ),
+        "links" -> Json.obj(
+          "type" -> Json.obj(
+            "$ref" -> "#/components/schemas/PaginationLinks"
+          )
+        ),
+        "meta" -> Json.obj(
+          "type" -> "object",
+          "nullable" -> true
+        )
+      )
+    ),
+    "JsonAPIItemResponse" -> Json.obj(
+      "properties" -> Json.obj(
+        "data" -> Json.obj(
+          "type" -> "object"
+        ),
+        "included" -> Json.obj(
+          "type" -> "array",
+          "nullable" -> true
+        ),
+        "links" -> Json.obj(
+          "type" -> "array",
+          "nullable" -> true
+        ),
+        "meta" -> Json.obj(
+          "type" -> "object",
+          "nullable" -> true
+        )
+      )
+    ),
+    "PaginationLinks" -> Json.obj(
+      "properties" -> Json.obj(
+        "first" -> Json.obj(
+          "type" -> "string"
+        ),
+        "last" -> Json.obj(
+          "type" -> "string"
+        ),
+        "next" -> Json.obj(
+          "type" -> "string",
+          "nullable" -> true
+        ),
+        "prev" -> Json.obj(
+          "type" -> "string",
+          "nullable" -> true
+        )
+      ),
+      "required" -> Json.arr("first", "last")
+    )
+  )
+
+  val searchSpec: JsObject = Json.obj(
+    "operationId" -> "search",
+    "responses" -> Json.obj(
+      "200" -> Json.obj(
+        "description" -> "OK",
+        "application/vnd.api+json" -> Json.obj(
+          "schema" -> Json.obj(
+            "$ref" -> "#/components/schemas/JsonAPIListResponse"
+          )
+
+        )
+      )
+    ),
+    "parameters" -> searchParams
+  )
+
+  val searchInSpec: JsObject = Json.obj(
+    "operationId" -> "searchIn",
+    "responses" -> Json.obj(
+      "200" -> Json.obj(
+        "description" -> "OK",
+        "application/vnd.api+json" -> Json.obj(
+          "schema" -> Json.obj(
+            "$ref" -> "#/components/schemas/JsonAPIListResponse"
+          )
+
+        )
+      )
+    ),
+    "parameters" -> (fetchParams ++ searchParams)
+  )
+
+  val fetchSpec: JsObject = Json.obj(
+    "operationId" -> "fetch",
+    "responses" -> Json.obj(
+      "200" -> Json.obj(
+        "description" -> "OK",
+        "application/vnd.api+json" -> Json.obj(
+          "schema" -> Json.obj(
+            "$ref" -> "#/components/schemas/JsonAPIItemResponse"
+          )
+
+        )
+      )
+    ),
+    "parameters" -> fetchParams
+  )
 }
