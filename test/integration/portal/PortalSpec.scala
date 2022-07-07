@@ -15,7 +15,7 @@ class PortalSpec extends IntegrationTestRunner {
 
   import mockdata.privilegedUser
 
-  private val portalRoutes: ReversePortal = controllers.portal.routes.Portal
+  private val portalRoutes = controllers.portal.routes.Portal
 
   override def getConfig = Map("recaptcha.skip" -> true)
 

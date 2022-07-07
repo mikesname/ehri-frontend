@@ -468,6 +468,9 @@ case class ApiV1 @Inject()(
           apiRoutes.searchIn("ID").url.replace("ID", "{id}") -> Json.obj(
             apiRoutes.searchIn("ID").method.toLowerCase -> searchInSpec
           ),
+          apiRoutes.related("ID").url.replace("ID", "{id}") -> Json.obj(
+            apiRoutes.related("ID").method.toLowerCase -> relatedSpec
+          ),
           apiRoutes.fetch("ID").url.replace("ID", "{id}") -> Json.obj(
             apiRoutes.fetch("ID").method.toLowerCase -> fetchSpec
           )

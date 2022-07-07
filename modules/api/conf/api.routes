@@ -1,71 +1,18 @@
 # API V1 routes
 
-
-### NoDocs ###
-GET        /                  @controllers.api.ApiHome.index()
-
-### NoDocs ###
-GET        /v1                @controllers.api.v1.ApiV1Home.index()
-
-###
-#   summary: Search portal items
-#   parameters:
-#       - name: "`type`"
-#         hidden: true
-#   responses:
-#       200:
-#           description: success
-#           content:
-#               application/vnd.api+json:
-#                   schema:
-#                       $ref: '#/components/schemas/models.api.v1.JsonApiV1.JsonApiListResponse'
-###
-GET        /v1/search         @controllers.api.v1.ApiV1.search(`type`: Seq[models.api.v1.ApiEntity.Value] ?= Seq.empty, params: services.search.SearchParams ?= services.search.SearchParams.empty, paging: utils.PageParams ?= utils.PageParams.empty, fields: Seq[utils.FieldFilter] ?= Seq.empty, facets: models.api.v1.ApiFacets ?= models.api.v1.ApiFacets.empty)
-
-### NoDocs ###
-GET        /v1/spec           @controllers.api.v1.ApiV1.spec()
-
-###
-#   summary: Fetch an item by ID
-#   responses:
-#       200:
-#           description: success
-#           content:
-#               application/vnd.api+json:
-#                   schema:
-#                       $ref: '#/components/schemas/models.api.v1.JsonApiV1.JsonApiResponse'
-###
-GET        /v1/:id            @controllers.api.v1.ApiV1.fetch(id: String, fields: Seq[utils.FieldFilter] ?= Seq.empty)
-
-### NoDocs ###
-GET        /v1/:id/search     @controllers.api.v1.ApiV1.searchIn(id: String, `type`: Seq[models.api.v1.ApiEntity.Value] ?= Seq.empty, params: services.search.SearchParams ?= services.search.SearchParams.empty, paging: utils.PageParams ?= utils.PageParams.empty, fields: Seq[utils.FieldFilter] ?= Seq.empty, facets: models.api.v1.ApiFacets ?= models.api.v1.ApiFacets.empty)
-
-### NoDocs ###
-GET        /v1/:id/related    @controllers.api.v1.ApiV1.related(id: String, `type`: Seq[models.api.v1.ApiEntity.Value] ?= Seq.empty, params: services.search.SearchParams ?= services.search.SearchParams.empty, paging: utils.PageParams ?= utils.PageParams.empty, fields: Seq[utils.FieldFilter] ?= Seq.empty, facets: models.api.v1.ApiFacets ?= models.api.v1.ApiFacets.empty)
-
-### NoDocs ###
-GET        /graphql           @controllers.api.graphql.GraphQL.index()
-
-### NoDocs ###
-POST       /graphql           @controllers.api.graphql.GraphQL.query()
-
-### NoDocs ###
-GET        /graphql/ui        @controllers.api.graphql.GraphQL.graphiql()
-
-### NoDocs ###
-GET        /oaipmh-doc        @controllers.api.oaipmh.OaiPmhHome.index()
-
-### NoDocs ###
-GET        /oaipmh            @controllers.api.oaipmh.OaiPmhHome.query()
-
-### NoDocs ###
-GET        /datasets          @controllers.api.datasets.Datasets.list(q: Option[String], sort: Option[String], paging: utils.PageParams ?= utils.PageParams.empty, format: controllers.DataFormat.Value ?= controllers.DataFormat.Html)
-
-### NoDocs ###
-GET        /datasets/:id      @controllers.api.datasets.Datasets.get(id: String, format: controllers.DataFormat.Value ?= controllers.DataFormat.Html)
-
-### NoDocs ###
-GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
-
-### NoDocs ###
-GET   /v/*file                 controllers.Assets.versioned(path="/public", file: Asset)
+GET        /                        @controllers.api.ApiHome.index()
+GET        /v1                      @controllers.api.v1.ApiV1Home.index()
+GET        /v1/search               @controllers.api.v1.ApiV1.search(`type`: Seq[models.api.v1.ApiEntity.Value] ?= Seq.empty, params: services.search.SearchParams ?= services.search.SearchParams.empty, paging: utils.PageParams ?= utils.PageParams.empty, fields: Seq[utils.FieldFilter] ?= Seq.empty, facets: models.api.v1.ApiFacets ?= models.api.v1.ApiFacets.empty)
+GET        /v1/spec                 @controllers.api.v1.ApiV1.spec()
+GET        /v1/:id                  @controllers.api.v1.ApiV1.fetch(id: String, fields: Seq[utils.FieldFilter] ?= Seq.empty)
+GET        /v1/:id/search           @controllers.api.v1.ApiV1.searchIn(id: String, `type`: Seq[models.api.v1.ApiEntity.Value] ?= Seq.empty, params: services.search.SearchParams ?= services.search.SearchParams.empty, paging: utils.PageParams ?= utils.PageParams.empty, fields: Seq[utils.FieldFilter] ?= Seq.empty, facets: models.api.v1.ApiFacets ?= models.api.v1.ApiFacets.empty)
+GET        /v1/:id/related          @controllers.api.v1.ApiV1.related(id: String, `type`: Seq[models.api.v1.ApiEntity.Value] ?= Seq.empty, params: services.search.SearchParams ?= services.search.SearchParams.empty, paging: utils.PageParams ?= utils.PageParams.empty, fields: Seq[utils.FieldFilter] ?= Seq.empty, facets: models.api.v1.ApiFacets ?= models.api.v1.ApiFacets.empty)
+GET        /graphql                 @controllers.api.graphql.GraphQL.index()
+POST       /graphql                 @controllers.api.graphql.GraphQL.query()
+GET        /graphql/ui              @controllers.api.graphql.GraphQL.graphiql()
+GET        /oaipmh-doc              @controllers.api.oaipmh.OaiPmhHome.index()
+GET        /oaipmh                  @controllers.api.oaipmh.OaiPmhHome.query()
+GET        /datasets                @controllers.api.datasets.Datasets.list(q: Option[String], sort: Option[String], paging: utils.PageParams ?= utils.PageParams.empty, format: controllers.DataFormat.Value ?= controllers.DataFormat.Html)
+GET        /datasets/:id            @controllers.api.datasets.Datasets.get(id: String, format: controllers.DataFormat.Value ?= controllers.DataFormat.Html)
+GET        /docs/swagger-ui/*file   controllers.Assets.at(path:String="/public/lib/swagger-ui", file: String)
+GET        /v/*file                 controllers.Assets.versioned(path="/public", file: Asset)

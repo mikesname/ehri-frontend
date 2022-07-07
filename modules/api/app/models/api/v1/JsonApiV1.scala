@@ -444,7 +444,7 @@ object JsonApiV1 {
         "enum" -> ApiEntity.values.toSeq.sorted,
       ),
       "required" -> false,
-      "description" -> "the search query",
+      "description" -> "the type of item requested",
     ),
     Json.obj(
       "in" -> "query",
@@ -453,7 +453,7 @@ object JsonApiV1 {
         "type" -> "string",
       ),
       "required" -> false,
-      "description" -> "the search query"
+      "description" -> "the textual search query"
     ),
     Json.obj(
       "in" -> "query",
@@ -541,6 +541,8 @@ object JsonApiV1 {
 
   val searchSpec: JsObject = Json.obj(
     "operationId" -> "search",
+    "description" -> """Search all supported items.
+      If no query is provided the full paginated list of items will be returned.""",
     "responses" -> Json.obj(
       "200" -> Json.obj(
         "description" -> "OK",
@@ -557,6 +559,27 @@ object JsonApiV1 {
 
   val searchInSpec: JsObject = Json.obj(
     "operationId" -> "searchIn",
+    "description" -> """Search child items held by the parent item with the given ID.
+      If no query is provided the full paginated list of items will be returned.""",
+    "responses" -> Json.obj(
+      "200" -> Json.obj(
+        "description" -> "OK",
+        "application/vnd.api+json" -> Json.obj(
+          "schema" -> Json.obj(
+            "$ref" -> "#/components/schemas/JsonAPIListResponse"
+          )
+
+        )
+      )
+    ),
+    "parameters" -> (fetchParams ++ searchParams)
+  )
+
+  val relatedSpec: JsObject = Json.obj(
+    "operationId" -> "related",
+    "description" -> """Search (or enumerate) items related to the item with the given ID.
+      Relations may be via access points or another link type such as a copy/original relationship.
+      At present the type of relationship is only available via the [GraphQL API](/api/graphql).""",
     "responses" -> Json.obj(
       "200" -> Json.obj(
         "description" -> "OK",
