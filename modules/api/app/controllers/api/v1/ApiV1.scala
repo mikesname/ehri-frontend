@@ -23,6 +23,7 @@ import services.cypher.CypherService
 import services.data._
 import services.search.SearchConstants._
 import services.search._
+import services.search.resolvers.SearchItemResolver
 import utils.{DateFacetUtils, FieldFilter, Page, PageParams}
 import views.Helpers
 

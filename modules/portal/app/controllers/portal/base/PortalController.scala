@@ -10,11 +10,12 @@ import lifecycle.ItemLifecycle
 import models.{EntityType, EventType, Model, UserProfile}
 import models.view.{MessagingInfo, UserDetails}
 import play.api.http.{ContentTypes, HeaderNames}
-import play.api.mvc.{Result, _}
+import play.api.mvc._
 import play.api.{Configuration, Logger}
 import services.accounts.AccountManager
 import services.data.{DataServiceBuilder, DataUser}
-import services.search.{SearchEngine, SearchItemResolver}
+import services.search.SearchEngine
+import services.search.resolvers.SearchItemResolver
 import utils._
 import views.html.MarkdownRenderer
 import views.html.errors.{gone, itemNotFound, maintenance, pageNotFound}

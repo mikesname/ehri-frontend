@@ -10,7 +10,8 @@ import play.api.cache.SyncCacheApi
 import services.accounts.AccountManager
 import services.data.DataServiceBuilder
 import services.redirects.MovedPageLookup
-import services.search.{SearchEngine, SearchItemResolver}
+import services.search.SearchEngine
+import services.search.resolvers.SearchItemResolver
 import views.html.MarkdownRenderer
 
 import javax.inject.Inject

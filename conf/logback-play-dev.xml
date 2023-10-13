@@ -57,8 +57,11 @@
   <!-- Change to DEBUG to see backend request HTTP calls -->
   <logger name="services" level="INFO" />
 
-  <!-- Uncomment to see how indexed entities are converted to Solr docs.
-       Don't leave this on in production. -->
+    <!-- Uncomment to see how long it takes to resolve a search query to DB items -->
+    <!-- <logger name="services.search.resolvers" level="DEBUG" />-->
+
+    <!-- Uncomment to see how indexed entities are converted to Solr docs.
+         Don't leave this on in production. -->
   <!-- <logger name="services.search" level="TRACE" /> -->
 
   <!-- Uncomment to see Solr requests -->

@@ -1,9 +1,10 @@
-package services.search
+package services.search.resolvers
 
 import models.Readable
+import services.data.DataUser
+import services.search.SearchHit
 
 import scala.concurrent.Future
-import services.data.DataUser
 
 /**
  * Component responsible for resolving items from the

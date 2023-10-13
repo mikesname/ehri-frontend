@@ -34,6 +34,7 @@ import services.htmlpages.{HtmlPages, MockHtmlPages}
 import services.ingest.{EadValidator, MockEadValidatorService}
 import services.oauth2.OAuth2Service
 import services.redirects.{MockMovedPageLookup, MovedPageLookup}
+import services.search.resolvers.{IdSearchResolver, SearchItemResolver}
 import services.search.{MockSearchIndexMediator, _}
 import utils.MockBufferedMailer
 

@@ -5,6 +5,7 @@ import models.{ContentType, EntityType, Readable, UserProfile, WithId}
 import play.api.Logger
 import play.api.mvc._
 import services.search._
+import services.search.resolvers.SearchItemResolver
 import utils.{Page, PageParams}
 
 import scala.concurrent.Future
@@ -19,7 +20,7 @@ trait Search extends CoreActionBuilders {
 
   protected def searchEngine: services.search.SearchEngine
 
-  protected def searchResolver: services.search.SearchItemResolver
+  protected def searchResolver: SearchItemResolver
 
   /**
     * A function that generates a list of facet classes from an
