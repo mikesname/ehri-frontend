@@ -357,9 +357,21 @@ CREATE INDEX coreference_value_text ON coreference_value(text);
 CREATE INDEX coreference_value_target_id ON coreference_value(target_id);
 CREATE INDEX coreference_value_set_id ON coreference_value(set_id);
 
+CREATE TABLE tasks(
+    id          SERIAL PRIMARY KEY,
+    type        VARCHAR(50) NOT NULL,
+    payload     JSON NOT NULL,
+    created     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    failed      BOOLEAN NOT NULL DEFAULT FALSE,
+    error       TEXT,
+);
+
+CREATE INDEX tasks_type ON tasks(type);
+
 
  # --- !Downs
 
+DROP TABLE IF EXISTS tasks CASCADE;
 DROP TABLE IF EXISTS coreference CASCADE;
 DROP TABLE IF EXISTS coreference_value CASCADE;
 DROP TABLE IF EXISTS cleanup_action_redirect CASCADE;
