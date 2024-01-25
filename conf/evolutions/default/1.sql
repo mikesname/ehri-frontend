@@ -363,7 +363,7 @@ CREATE TABLE tasks(
     payload     JSON NOT NULL,
     created     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     failed      BOOLEAN NOT NULL DEFAULT FALSE,
-    error       TEXT,
+    error       TEXT NULL
 );
 
 CREATE INDEX tasks_type ON tasks(type);

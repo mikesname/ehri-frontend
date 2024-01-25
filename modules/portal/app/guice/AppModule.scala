@@ -49,5 +49,6 @@ class AppModule extends AbstractModule with AkkaGuiceSupport {
     bind(classOf[MarkdownRenderer]).to(classOf[SanitisingMarkdownRenderer])
     bind(classOf[CypherService]).to(classOf[WsCypherService])
     bindActor[EventForwarder]("event-forwarder")
+    bindActor[IndexTaskWorker]("task-worker")
   }
 }
