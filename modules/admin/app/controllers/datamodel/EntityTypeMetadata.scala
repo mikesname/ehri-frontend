@@ -16,4 +16,8 @@ case class EntityTypeMetadata @Inject()(
   def editor(): Action[AnyContent] = WithUserAction { implicit request =>
     Ok(views.html.admin.datamodel.editor())
   }
+
+  def auditor(): Action[AnyContent] = WithUserAction { implicit request =>
+    Ok(views.html.admin.datamodel.auditor())
+  }
 }

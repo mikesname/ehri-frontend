@@ -39,6 +39,10 @@ object Entity {
    * Format for a generic entity.
    */
   val entityFormat: Format[Entity] = Format(entityReads, entityWrites)
+
+  implicit object EntityReadable extends Readable[Entity] {
+    val restReads: Reads[Entity] = entityReads
+  }
 }
 
 case class Entity(
