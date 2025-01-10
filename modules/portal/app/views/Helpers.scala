@@ -4,7 +4,7 @@ import java.net.{MalformedURLException, URL}
 import models.{Annotation, Description, Entity, EntityType, FieldMetadata, Model, PermissionType, UserProfile}
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
-import org.jsoup.safety.Whitelist
+import org.jsoup.safety.Safelist
 import play.api.i18n.Messages
 import play.api.mvc.{Call, RequestHeader}
 
@@ -38,7 +38,7 @@ object Helpers {
   }
 
 
-  def stripTags(htmlText: String): String = Jsoup.clean(htmlText, Whitelist.none())
+  def stripTags(htmlText: String): String = Jsoup.clean(htmlText, Safelist.none())
 
   /**
    * Condense multiple descriptions that are next to each other in a list.

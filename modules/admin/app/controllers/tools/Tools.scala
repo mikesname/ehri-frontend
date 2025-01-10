@@ -1,13 +1,13 @@
 package controllers.tools
 
-import org.apache.pekko.stream.Materializer
-import org.apache.pekko.stream.connectors.csv.scaladsl.CsvParsing
-import org.apache.pekko.stream.scaladsl.{FileIO, Flow, Sink, Source}
-import org.apache.pekko.util.ByteString
 import controllers.base.AdminController
 import controllers.{AppComponents, Execution}
 import models.{BatchDeleteTask, ContentTypes}
 import org.apache.pekko.NotUsed
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.connectors.csv.scaladsl.CsvParsing
+import org.apache.pekko.stream.scaladsl.{FileIO, Flow, Sink, Source}
+import org.apache.pekko.util.ByteString
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n.Messages
@@ -37,7 +37,7 @@ case class Tools @Inject()(
   searchIndexer: SearchIndexMediator,
   ws: WSClient,
   cypher: CypherService,
-  eadValidator: EadValidator
+  eadValidator: EadValidator,
 )(implicit mat: Materializer) extends AdminController {
 
   import models.FindReplaceTask

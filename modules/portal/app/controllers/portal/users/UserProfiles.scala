@@ -1,5 +1,6 @@
 package controllers.portal.users
 
+import com.codahale.metrics.MetricRegistry
 import org.apache.pekko.stream.Materializer
 import controllers.base.{ImageHelpers, ResolutionTooHigh, UnrecognizedType}
 import controllers.generic.Search
@@ -27,7 +28,8 @@ case class UserProfiles @Inject()(
   controllerComponents: ControllerComponents,
   appComponents: AppComponents,
   mailer: MailerClient,
-  fileStorage: FileStorage
+  fileStorage: FileStorage,
+  metrics: MetricRegistry
 ) extends PortalController
   with Search
   with CsvHelpers
@@ -44,6 +46,7 @@ case class UserProfiles @Inject()(
 
   def watchItemPost(id: String): Action[AnyContent] = WithUserAction.async { implicit request =>
     userDataApi.watch(request.user.id, id).map { _ =>
+      metrics.counter("users.watchedItems").inc()
       clearWatchedItemsCache(request.user.id)
       if (isAjax) Ok("ok")
       else Redirect(profileRoutes.watching())
@@ -57,6 +60,7 @@ case class UserProfiles @Inject()(
 
   def unwatchItemPost(id: String): Action[AnyContent] = WithUserAction.async { implicit request =>
     userDataApi.unwatch(request.user.id, id).map { _ =>
+      metrics.counter("users.unwatchedItems").inc()
       clearWatchedItemsCache(request.user.id)
       if (isAjax) Ok("ok")
       else Redirect(profileRoutes.watching())
@@ -243,6 +247,7 @@ case class UserProfiles @Inject()(
       ),
       profile => userDataApi.update[UserProfile, UserProfileF](
           request.user.id, profile.toUser(request.user.data)).map { _ =>
+        metrics.counter("users.updatedProfile").inc()
         Redirect(profileRoutes.profile())
           .flashing("success" -> Messages("profile.update.confirmation"))
       }
@@ -268,7 +273,8 @@ case class UserProfiles @Inject()(
           identifier = request.user.data.identifier, name = request.user.data.identifier,
           active = false)
 
-        userDataApi.update[UserProfile,UserProfileF](request.user.id, anonProfile).flatMap { bool =>
+        userDataApi.update[UserProfile,UserProfileF](request.user.id, anonProfile).flatMap { _ =>
+          metrics.counter("users.deletedProfile").inc()
           accounts.delete(request.user.id).flatMap { _ =>
             gotoLogoutSucceeded
               .map(_.flashing("success" -> "profile.profile.delete.confirmation"))
@@ -299,6 +305,7 @@ case class UserProfiles @Inject()(
         (for {
           url <- convertAndUploadFile(multipartForm.file("image"), request.user)
           _ <- userDataApi.patch[UserProfile](request.user.id, Json.obj(UserProfileF.IMAGE_URL -> url))
+          _ = metrics.counter("users.updatedProfileImage").inc()
         } yield Redirect(profileRoutes.profile())
           .flashing("success" -> "profile.update.confirmation")
           ).recoverWith {

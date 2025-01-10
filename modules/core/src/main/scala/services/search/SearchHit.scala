@@ -6,7 +6,7 @@ import models.EntityType
 import play.api.libs.json.JsValue
 import play.twirl.api.{Html,HtmlFormat}
 import org.jsoup.Jsoup
-import org.jsoup.safety.Whitelist
+import org.jsoup.safety.Safelist
 
 /**
  * Class representing a search engine hit
@@ -22,7 +22,7 @@ case class SearchHit(
 ) extends views.Highlighter {
 
   private def stripTags(value: String): String =
-    value.replaceAll("""<(?!\/?(?=>|\s.*>))\/?.*?>""", "")
+    value.replaceAll("""<(?!/?(?=>|\s.*>))/?.*?>""", "")
 
   private val skipFields = Set(
     ID, ITEM_ID, DB_ID, PARENT_ID, TYPE, LANGUAGE_CODE
@@ -79,5 +79,5 @@ case class SearchHit(
     * @param text Some input text
     * @return The text, with highlights inserted
     */
-  def highlightText(text: String): Html = Html(highlight(Jsoup.clean(text, Whitelist.none())))
+  def highlightText(text: String): Html = Html(highlight(Jsoup.clean(text, Safelist.none())))
 }

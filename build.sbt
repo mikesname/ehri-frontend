@@ -88,7 +88,7 @@ val coreDependencies = backendDependencies ++ Seq(
   "com.atlassian.commonmark" % "commonmark-ext-autolink" % "0.12.1",
 
   // HTML sanitising...
-  "org.jsoup" % "jsoup" % "1.11.3",
+  "org.jsoup" % "jsoup" % "1.18.1",
 
   // Mailer...
   "org.playframework" %% "play-mailer" % "11.0.0-M1",
@@ -98,7 +98,10 @@ val coreDependencies = backendDependencies ++ Seq(
   "org.ocpsoft.prettytime" % "prettytime" % "3.2.7.Final",
 
   // Logging: Janino is necessary for configuring LogBack's regex filter
-  "org.codehaus.janino" % "janino" % "2.7.7"
+  "org.codehaus.janino" % "janino" % "2.7.7",
+
+  // Metrics
+  "io.dropwizard.metrics" % "metrics-core" % "4.1.2",
 )
 
 val portalDependencies = Seq(
