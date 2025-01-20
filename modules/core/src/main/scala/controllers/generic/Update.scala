@@ -35,7 +35,6 @@ trait Update[MT <: Model{type T <: ModelData with Persistable}] extends Read[MT]
   protected def EditAction(itemId: String)(implicit ct: ContentType[MT]): ActionBuilder[EditRequest, AnyContent] =
     WithItemPermissionAction(itemId, PermissionType.Update) andThen new CoreActionTransformer[ItemPermissionRequest, EditRequest] {
       def transform[A](request: ItemPermissionRequest[A]): Future[EditRequest[A]] = {
-        implicit val req: ItemPermissionRequest[A] = request
         val formConfig = FieldMetaFormFieldHintsBuilder(ct.entityType, entityTypeMetadata, conf.configuration)
         formConfig.forUpdate.map { fieldHints =>
           EditRequest(request.item, fieldHints, request.userOpt, request.request)

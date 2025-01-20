@@ -135,7 +135,8 @@ case class ImportDatasets @Inject()(
   def listAll(): Action[AnyContent] = OptionalUserAction.async { implicit request =>
     val defaultLogo = controllers.portal.routes.PortalAssets.versioned("img/institution-icon.png").url
     for {
-      sets <- datasets.listAll().map(_.toSeq)
+      allSets <- datasets.listAll()
+      sets <- filterByPermissions(allSets).map(_.toSeq)
       repos <- userDataApi.fetch[Repository](sets.map(_._1))
       combined = sets.zip(repos).collect {
         case ((id, sets), Some(r)) =>
@@ -205,5 +206,24 @@ case class ImportDatasets @Inject()(
     } getOrElse {
       andThen.apply(dataset)
     }
+  }
+
+  private def filterByPermissions(repoSets: Map[String, Seq[ImportDataset]])(implicit userOpt: Option[UserProfile] = None): Future[Map[String, Seq[ImportDataset]]] = {
+    userOpt.map { user =>
+      if (user.isAdmin) Future.successful(repoSets)
+      else {
+        // Determine if the user can manage Documentary Units (Import, Update, Delete permissions)
+        // for the given repository
+        val checks: Seq[Future[(String, Boolean, Seq[ImportDataset])]] = repoSets.map { case (repoId, sets) =>
+          val data = userDataApi.itemPermissions(userOpt.get.id, ContentTypes.DocumentaryUnit, repoId)
+          data.map { perms =>
+            (repoId, perms.has(PermissionType.Create) && perms.has(PermissionType.Update), sets)
+          }
+        }.toSeq
+        Future.sequence(checks).map { results =>
+          results.collect { case (id, true, sets) => id -> sets }.toMap
+        }
+      }
+    }.getOrElse(Future.successful(Map.empty))
   }
 }

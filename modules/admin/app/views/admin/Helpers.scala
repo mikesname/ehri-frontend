@@ -9,7 +9,7 @@ import views.html.helper.{FieldConstructor, FieldElements}
  */
 object Helpers {
 
-  val mainMenu = Seq(
+  val mainMenu: Seq[(String, String)] = Seq(
     ("contentTypes.Country",          controllers.countries.routes.Countries.search().url),
     ("contentTypes.Repository",       controllers.institutions.routes.Repositories.search().url),
     ("contentTypes.DocumentaryUnit",  controllers.units.routes.DocumentaryUnits.search().url),
@@ -17,7 +17,7 @@ object Helpers {
     ("contentTypes.CvocConcept",      controllers.keywords.routes.Concepts.search().url),
   )
 
-  val moreMenu = Seq(
+  val moreMenu: Seq[(String, String)] = Seq(
     ("contentTypes.CvocVocabulary",   controllers.vocabularies.routes.Vocabularies.list().url),
     ("contentTypes.AuthoritativeSet", controllers.sets.routes.AuthoritativeSets.list().url),
     ("contentTypes.UserProfile",      controllers.users.routes.UserProfiles.search().url),
@@ -27,11 +27,11 @@ object Helpers {
     ("contentTypes.SystemEvent",      controllers.events.routes.SystemEvents.list().url),
     ("s2", "-"),
     ("cypherQuery.list",              controllers.cypher.routes.CypherQueries.listQueries().url),
-  )
-
-  val adminMenu = Seq(
     ("s3", "-"),
     ("ingest.datasets",             controllers.datasets.routes.ImportDatasets.dashboard().url),
+  )
+
+  val adminMenu: Seq[(String, String)] = Seq(
     ("s4", "-"),
     ("dataModel",                   controllers.datamodel.routes.EntityTypeMetadata.editor().url),
     ("dataModel.audit",             controllers.datamodel.routes.EntityTypeMetadata.auditor().url),
