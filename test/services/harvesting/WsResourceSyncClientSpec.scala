@@ -9,12 +9,12 @@ import play.api.routing.Router
 import play.api.test.PlaySpecification
 import play.filters.HttpFiltersComponents
 
-class WSResourceSyncClientSpec extends PlaySpecification with TestConfiguration {
+class WsResourceSyncClientSpec extends PlaySpecification with TestConfiguration {
 
   private implicit val as: ActorSystem = ActorSystem("test")
   private implicit val mat: Materializer = Materializer(as)
 
-  def withResourceSyncClient[T](block: WSResourceSyncClient => T): T = {
+  def withResourceSyncClient[T](block: WsResourceSyncClient => T): T = {
     import play.api.mvc._
     import play.api.routing.sird._
     import play.api.test._
@@ -30,7 +30,7 @@ class WSResourceSyncClientSpec extends PlaySpecification with TestConfiguration 
       }.application
     } { implicit port =>
       WsTestClient.withClient { client =>
-        block(WSResourceSyncClient(client))
+        block(WsResourceSyncClient(client))
       }
     }
   }

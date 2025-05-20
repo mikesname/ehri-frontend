@@ -6,7 +6,7 @@ import auth.oauth2.OAuth2Config
 import auth.oauth2.providers._
 import com.google.inject.AbstractModule
 import services.accounts.{AccountManager, SqlAccountManager}
-import services.oauth2.{OAuth2Service, WebOAuth2Service}
+import services.oauth2.{OAuth2Service, WsOAuth2Service}
 
 import javax.inject.{Inject, Provider}
 
@@ -26,7 +26,7 @@ class AuthModule extends AbstractModule {
   override def configure(): Unit = {
     bind(classOf[AuthIdContainer]).to(classOf[CookieIdContainer])
     bind(classOf[AccountManager]).to(classOf[SqlAccountManager])
-    bind(classOf[OAuth2Service]).to(classOf[WebOAuth2Service])
+    bind(classOf[OAuth2Service]).to(classOf[WsOAuth2Service])
     bind(classOf[OAuth2Config]).toProvider(classOf[OAuth2ConfigProvider])
   }
 }

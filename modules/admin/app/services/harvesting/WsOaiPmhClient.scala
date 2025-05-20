@@ -37,9 +37,9 @@ case class Resume(token: String) extends TokenState
 case object Final extends TokenState
 
 
-case class WSOaiPmhClient @Inject()(ws: WSClient, cache: AsyncCacheApi)(implicit ec: ExecutionContext, mat: Materializer) extends OaiPmhClient {
+case class WsOaiPmhClient @Inject()(ws: WSClient, cache: AsyncCacheApi)(implicit ec: ExecutionContext, mat: Materializer) extends OaiPmhClient {
 
-  private val logger = Logger(classOf[WSOaiPmhClient])
+  private val logger = Logger(classOf[WsOaiPmhClient])
 
   @throws[OaiPmhError]
   private def checkError(r: WSResponse): Unit = try {

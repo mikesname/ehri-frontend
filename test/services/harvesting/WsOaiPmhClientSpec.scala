@@ -13,7 +13,7 @@ import services.ServiceConfig
 import java.io.StringWriter
 import scala.xml.XML
 
-class WSOaiPmhClientSpec extends PlaySpecification with TestConfiguration {
+class WsOaiPmhClientSpec extends PlaySpecification with TestConfiguration {
 
   private def stringify(elem: Element): String = {
     import javax.xml.transform.TransformerFactory

@@ -23,7 +23,7 @@ import scala.xml.{Node, NodeSeq}
   *  - prevent infinite redirection
   *
   */
-case class WSResourceSyncClient @Inject()(ws: WSClient)(implicit mat: Materializer) extends ResourceSyncClient {
+case class WsResourceSyncClient @Inject()(ws: WSClient)(implicit mat: Materializer) extends ResourceSyncClient {
 
   private implicit val ec: ExecutionContext = mat.executionContext
 

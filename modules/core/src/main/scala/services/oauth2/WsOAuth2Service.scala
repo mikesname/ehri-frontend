@@ -9,7 +9,7 @@ import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class WebOAuth2Service @Inject ()(
+case class WsOAuth2Service @Inject ()(
   ws: WSClient,
   config: play.api.Configuration
 )(implicit executionContext: ExecutionContext) extends OAuth2Service {

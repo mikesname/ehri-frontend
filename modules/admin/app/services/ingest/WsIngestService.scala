@@ -33,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * Service class for ingesting XML data into the database backend.
   *
   */
-case class WSIngestService @Inject()(
+case class WsIngestService @Inject()(
   config: Configuration,
   ws: WSClient,
   searchIndexer: SearchIndexMediator,
@@ -52,7 +52,7 @@ case class WSIngestService @Inject()(
   private val logger = Logger(getClass)
   private val serviceConfig = ServiceConfig("ehridata", config)
 
-  // Get an indexer handle with our our channel and filtered output
+  // Get an indexer handle with our channel and filtered output
   private def indexer(chan: ActorRef): SearchIndexMediatorHandle =
     searchIndexer.handle.withChannel(chan, filter = _ % 1000 == 0)
 
