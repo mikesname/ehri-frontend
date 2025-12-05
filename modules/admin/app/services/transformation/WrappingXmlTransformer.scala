@@ -50,7 +50,7 @@ case class WrappingXmlTransformer @Inject()(
 
   private def transformXml(src: String, mappings: Seq[(TransformationType.Value, String, JsObject)]): String = {
     val md5 = digest(src, mappings)
-    cache.getOrElseUpdate(md5, cacheTime) {
+    cache.getOrElseUpdate[String](md5, cacheTime) {
       time(s"Transform $md5 (${mappings.size} mappings)") {
         mappings.foldLeft(src) { case (out, (mapType, map, params)) =>
           logger.debug(s"Running mapType: $mapType...")

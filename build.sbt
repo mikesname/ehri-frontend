@@ -33,7 +33,12 @@ ThisBuild / libraryDependencySchemes ++= Seq(
 val backendDependencies = Seq(
   // Play stuff
   ws,
-  caffeine,
+
+  // enable Play cache API (based on your Play version)
+  cacheApi,
+
+  // include play-redis library
+  "com.github.karelcemus" %% "play-redis" % "5.4.0",
 
   // commons text
   "org.apache.commons" % "commons-text" % "1.4",

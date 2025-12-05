@@ -17,7 +17,7 @@ case class RateLimitChecker @Inject()(cache: SyncCacheApi) {
   def checkHits[A](limit: Int, duration: FiniteDuration)(implicit request: Request[A]): Boolean = {
     val ip = request.remoteAddress
     val key = request.path + ip
-    val count = cache.get(key).getOrElse(0)
+    val count = cache.get[Int](key).getOrElse(0)
     logger.debug(s"Check rate limit: Limit $limit, timeout $duration, ip: $ip, key: $key, current: $count")
     if (count < limit) {
       cache.set(key, count + 1, duration)

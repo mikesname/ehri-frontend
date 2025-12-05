@@ -95,7 +95,7 @@ case class WSOaiPmhClient @Inject()(ws: WSClient, cache: AsyncCacheApi)(implicit
     .withHttpHeaders(endpoint.auth.toSeq.map(s => HeaderNames.AUTHORIZATION -> s"Basic ${s.encodeBase64}"): _*)
 
   private def getGranularity(endpoint: OaiPmhConfig): Future[OaiPmhIdentity.Granularity.Value] = {
-    cache.getOrElseUpdate(s"oaipmh-granularity:${endpoint.url}", 1.hour) {
+    cache.getOrElseUpdate[Granularity.Value](s"oaipmh-granularity:${endpoint.url}", 1.hour) {
       identify(endpoint).map(_.granularity)
     }
   }

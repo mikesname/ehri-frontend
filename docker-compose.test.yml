@@ -31,6 +31,12 @@ services:
     ports:
       - ${SOLR_TEST_PORT:-8982}:8983
 
+  # Distributed cache
+  redis:
+    image: docker.io/redis:alpine3.22
+    ports:
+      - "${REDIS_PORT:-6378}:6379"
+
   # This simply allows us to send mails from CI environments
   smtp:
     image: docker.io/python:3.9.7-slim

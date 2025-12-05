@@ -80,8 +80,8 @@ case class WsDataService(eventHandler: EventHandler, config: Configuration, cach
     val url = canonicalUrl(id)(resource)
     // NB: Caching this is not straightforward since the types are generic and
     // we don't have the runtime type (or a `scala.reflect.ClassTag`) available.
-    // As a result we cache the JSON response from the backend rather than the
-    // item itself directly.
+    // As a result we cache the JSON response from the backend as bytes rather
+    // than the item itself directly.
     // This requires doing a HEAD request to check the item exists and has the
     // right resource type on the backend to avoid potentially fetching something
     // from the cache as the wrong resource type. An alternate solution would be
@@ -92,10 +92,10 @@ case class WsDataService(eventHandler: EventHandler, config: Configuration, cach
         // Fetch the JSON object from the cache
         val jsonF = cache.getOrElseUpdate(itemCacheKey(id), cacheTime) {
           // Or else fetch it from the backend...
-          userCall(url, resource.defaultParams).get().map(_.json)
+          userCall(url, resource.defaultParams).get().map(o => Json.toBytes(o.json))
         }
         // Deserialize it now...
-        jsonF.map(json => jsonReadToRestError(json, resource._reads, context = Some(url)))
+        jsonF.map(Json.parse).map(json => jsonReadToRestError(json, resource._reads, context = Some(url)))
       } else {
         // If we fail to get an OK response run the request as normal
         // to get the correct error response from the server

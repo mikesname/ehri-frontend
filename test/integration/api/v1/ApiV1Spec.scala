@@ -37,7 +37,7 @@ class ApiV1Spec extends IntegrationTestRunner {
   }
 
   "API/V1" should {
-    "say forbodden when authorization enabled" in new ITestApp(
+    "say forbidden when authorization enabled" in new ITestApp(
       Map(
         "ehri.api.v1.authorization.enabled" -> true,
         "ehri.api.v1.authorization.tokens" -> List("allowed")
