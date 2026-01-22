@@ -114,9 +114,21 @@ case class Utils @Inject()(
       // Going nicely imperative here - sorry!
       var out = ""
       if (noProfile.nonEmpty) {
-        out += "Users have account but no profile\n"
+        out += "Users have account but no profile:\n"
         noProfile.foreach { u =>
           out += s"  $u\n"
+        }
+      }
+
+      // Find staff accounts with mismatching flags
+      val noStaffFlag: Set[CheckUser] = accounts.filter(_.staff).flatMap { u =>
+        profiles.find(p => p.id == u.id && !p.staff)
+      }
+      if (noStaffFlag.nonEmpty) {
+        if (out.nonEmpty) out += "\n"
+        out += "Staff flag mismatch:\n"
+        noStaffFlag.foreach { u =>
+          out += s"  ${u.id}\n"
         }
       }
 

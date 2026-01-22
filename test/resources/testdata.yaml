@@ -72,6 +72,7 @@
   data:
     identifier: mike
     name: Mike
+    staff: true
   relationships:
     belongsTo:
       - admin
@@ -107,6 +108,7 @@
   data:
     identifier: linda
     name: Linda
+    staff: true
   relationships:
     belongsTo:
       - dans

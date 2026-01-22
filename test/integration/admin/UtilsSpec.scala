@@ -34,7 +34,13 @@ class UtilsSpec extends IntegrationTestRunner with FakeMultipartUpload {
       // User joeblogs exists in the account mocks but not the
       // graph DB fixtures, so the sync check should (correctly)
       // highlight this.
-      contentAsString(check) must contain("joeblogs")
+      contentAsString(check) must_== """Users have account but no profile:
+                                       |  joeblogs
+                                       |  bobjohn
+                                       |
+                                       |Staff flag mismatch:
+                                       |  reto
+                                       |""".stripMargin
     }
 
 
