@@ -1049,6 +1049,7 @@ documentaryUnit.creationProcess.IMPORT=EHRI Partner
 documentaryUnit.creationProcess.IMPORT.disclaimer=This description is derived directly from structured data provided to EHRI by a \
  partner institution. This collection holding institution considers this description as an accurate reflection of the archival holdings \
   to which it refers at the moment of data transfer.
+documentaryUnit.pid=Persistent Identifier
 
 #
 # Historical Agents
