@@ -264,6 +264,13 @@ case class WsDataService(eventHandler: EventHandler, config: Configuration, cach
     }
   }
 
+  override def getAnyByPid[MT: Readable](pid: String): Future[MT] = {
+    val url: String = enc(genericItemUrl, s"pid:$pid")
+    BackendRequest(url).withHeaders(authHeaders.toSeq: _*).get().map { response =>
+      checkErrorAndParse(response, context = Some(url))(implicitly[Readable[MT]]._reads)
+    }
+  }
+
   override def fetch[MT: Readable](ids: Seq[String] = Seq.empty, gids: Seq[Long] = Seq.empty): Future[Seq[Option[MT]]] = {
     // NB: Using POST here because the list of IDs can
     // potentially overflow the GET param length...

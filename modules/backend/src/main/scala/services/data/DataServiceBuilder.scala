@@ -216,6 +216,14 @@ trait DataService {
   def getAny[MT: Readable](id: String): Future[MT]
 
   /**
+    * Fetch any type of item by persistent ID.
+    *
+    * @param pid the string PID
+    * @return the item
+    */
+  def getAnyByPid[MT: Readable](pid: String): Future[MT]
+
+  /**
     * Fetch items by string ID or internal graph ID.
     *
     * @param ids  a sequence of string IDs

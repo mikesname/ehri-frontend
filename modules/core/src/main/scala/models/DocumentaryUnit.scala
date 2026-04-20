@@ -10,6 +10,7 @@ import java.net.URL
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.json.JsObject
+import play.api.mvc.RequestHeader
 import services.data.Constants
 import utils.EnumUtils
 
@@ -148,4 +149,6 @@ case class DocumentaryUnit(
   } yield new URL(url)).headOption
 
   def createdManually: Boolean = descriptions.exists(_.creationProcess == CreationProcess.Manual)
+
+  def pid: Option[String] = meta.fields.collectFirst { case "pid" -> JsString(pid) => pid }
 }
