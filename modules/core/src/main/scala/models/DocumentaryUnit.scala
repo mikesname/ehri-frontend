@@ -139,7 +139,8 @@ case class DocumentaryUnit(
   with DescribedModel
   with Hierarchical[DocumentaryUnit]
   with Holder[DocumentaryUnit]
-  with Accessible {
+  with Accessible
+  with PersistentIdentifiable {
 
   type T = DocumentaryUnitF
 
@@ -149,6 +150,4 @@ case class DocumentaryUnit(
   } yield new URL(url)).headOption
 
   def createdManually: Boolean = descriptions.exists(_.creationProcess == CreationProcess.Manual)
-
-  def pid: Option[String] = meta.fields.collectFirst { case "pid" -> JsString(pid) => pid }
 }

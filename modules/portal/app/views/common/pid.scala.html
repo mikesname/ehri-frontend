@@ -1,0 +1,7 @@
+@(item: PersistentIdentifiable)(implicit req: RequestHeader, userOpt: Option[UserProfile], messages: Messages)
+
+@item.pid.map { pid =>
+    @views.html.common.sidebarSection(Messages("item.pid")) {
+        <a href="@controllers.portal.routes.Portal.lookupPid(pid)">https://n2t.net/ark:/41045/p2@pid</a>
+    }
+}
