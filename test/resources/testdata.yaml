@@ -128,6 +128,7 @@
   type: Repository
   data:
     identifier: r1
+    __pid: r1-1234
     name: Repository 1
   relationships:
     hasCountry: nl
@@ -163,6 +164,7 @@
   type: Repository
   data:
     identifier: r2
+    __pid: r2-1234
     name: King's College London
   relationships:
     hasCountry: gb
@@ -188,6 +190,7 @@
   type: Repository
   data:
     identifier: r3
+    __pid: r3-1234
     name: DANS
   relationships:
     hasCountry: nl
@@ -211,6 +214,7 @@
   type: Repository
   data:
     identifier: r4
+    __pid: r4-1234
     name: CEGES SOMA
   relationships:
     hasCountry: be
