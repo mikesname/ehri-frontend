@@ -1519,6 +1519,8 @@ ingest.use-source-id.description=If checked an EAD will only update an existing 
   file ID (derived from the EAD ID) match. This provides the ability to import multiple descriptions in the same language, \
   providing the source file ID differs. The default behaviour is to update existing descriptions that match the language of \
   the files being ingested and ignore the source file ID.
+ingest.version=Version
+ingest.version.description=Create version information for updated items
 ingest.tolerant=Tolerant
 ingest.tolerant.description=Continue importing items even if there are individual validation errors
 ingest.ex=Excluded IDs

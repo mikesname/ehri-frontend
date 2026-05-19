@@ -194,6 +194,7 @@ case class WSIngestService @Inject()(
         TOLERANT -> params.tolerant.toString,
         ALLOW_UPDATE -> params.allowUpdate.toString,
         USE_SOURCE_ID -> params.useSourceId.toString,
+        VERSION -> params.version.toString,
         LOG -> params.log,
         COMMIT -> params.commit.toString
       ) ++
