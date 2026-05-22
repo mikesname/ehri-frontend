@@ -63,8 +63,8 @@ case class CleanupRunner(
     // Launch the relink task
     case cleanup: Cleanup =>
       msgTo ! cleanup
-      dataApi.relinkTargets(cleanup.redirects, tolerant = true, commit = true)
-        .map(_.map(_._3).sum)
+      dataApi.migrateUnits(job.repoId, cleanup.redirects, commit = true)
+        .map(_.size)
         .map(c => Relinked(cleanup, status.copy(relinkCount = c)))
         .pipeTo(self)
 

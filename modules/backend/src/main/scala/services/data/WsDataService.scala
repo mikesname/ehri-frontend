@@ -381,6 +381,13 @@ case class WsDataService(eventHandler: EventHandler, config: Configuration, cach
     }
   }
 
+  override def diff(id: String, versionId: String): Future[JsValue] = {
+    val url: String = enc(genericItemUrl, id, "diff", versionId)
+    userCall(url).get().map { response =>
+      response.json
+    }
+  }
+
   override def createAnnotation[A <: WithId : Readable, AF: Writable](id: String, ann: AF, accessors: Seq[String] =
   Nil, subItem: Option[String] = None): Future[A] = {
     val url: String = enc(typeBaseUrl, EntityType.Annotation)
@@ -731,6 +738,14 @@ case class WsDataService(eventHandler: EventHandler, config: Configuration, cach
     Reads.seq[List[String]].map(_.collect { case a :: b :: c :: _ => (a, b, c) }),
     Writes { s => Json.toJson(s.map(t => Seq(t._1, t._2, t._3))) }
   )
+
+  override def migrateUnits(repoId: String, mapping: Seq[(String, String)], commit: Boolean = false): Future[Seq[Seq[String]]] = {
+    val repoUrl = enc(typeBaseUrl, EntityType.Repository, repoId, "migrate")
+    userCall(repoUrl)
+      .withQueryString("commit" -> commit.toString)
+      .post(Json.toJson(mapping))
+      .map(r => checkErrorAndParse[Seq[Seq[String]]](r, Some(repoUrl)))
+  }
 
   override def relinkTargets(mapping: Seq[(String, String)], tolerant: Boolean = false, commit: Boolean = false): Future[Seq[(String, String, Int)]] = {
     val url = enc(baseUrl, "tools", "relink-targets")

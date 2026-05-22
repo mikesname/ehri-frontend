@@ -82,6 +82,16 @@ trait DataService {
   def createNewUserProfile[T <: WithId : Readable](data: Map[String, String] = Map.empty, groups: Seq[String] = Seq.empty): Future[T]
 
   /**
+    * Migrate one set of documentary unit items to other items.
+    *
+    * @param repoId   the repository ID
+    * @param mapping  a mapping of source ID to target ID
+    * @param commit   commit changes to the database
+    * @return the input data with a count of how many items were transferred
+    */
+  def migrateUnits(repoId: String, mapping: Seq[(String, String)], commit: Boolean = false): Future[Seq[Seq[String]]]
+
+  /**
     * Transfer links from one item to another.
     *
     * @param mapping  a mapping of source ID to target ID
@@ -518,6 +528,15 @@ trait DataService {
     * @param params range params
     */
   def versions[V: Readable](id: String, params: PageParams): Future[Page[V]]
+
+  /**
+    * Get a JSON diff between an item and one of its versions.
+    *
+    * @param id the item id
+    * @param versionId a version id
+    * @return an object containing JSON operations
+    */
+  def diff(id: String, versionId: String): Future[JsValue]
 
   /**
     * Create an annotation on an item.
