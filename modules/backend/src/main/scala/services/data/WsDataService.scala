@@ -739,9 +739,10 @@ case class WsDataService(eventHandler: EventHandler, config: Configuration, cach
     Writes { s => Json.toJson(s.map(t => Seq(t._1, t._2, t._3))) }
   )
 
-  override def migrateUnits(repoId: String, mapping: Seq[(String, String)], commit: Boolean = false): Future[Seq[Seq[String]]] = {
+  override def migrateUnits(repoId: String, mapping: Seq[(String, String)], tolerant: Boolean = false, commit: Boolean = false): Future[Seq[Seq[String]]] = {
     val repoUrl = enc(typeBaseUrl, EntityType.Repository, repoId, "migrate")
     userCall(repoUrl)
+      .withQueryString("tolerant" -> tolerant.toString)
       .withQueryString("commit" -> commit.toString)
       .post(Json.toJson(mapping))
       .map(r => checkErrorAndParse[Seq[Seq[String]]](r, Some(repoUrl)))

@@ -89,7 +89,7 @@ trait DataService {
     * @param commit   commit changes to the database
     * @return the input data with a count of how many items were transferred
     */
-  def migrateUnits(repoId: String, mapping: Seq[(String, String)], commit: Boolean = false): Future[Seq[Seq[String]]]
+  def migrateUnits(repoId: String, mapping: Seq[(String, String)], tolerant: Boolean = false, commit: Boolean = false): Future[Seq[Seq[String]]]
 
   /**
     * Transfer links from one item to another.

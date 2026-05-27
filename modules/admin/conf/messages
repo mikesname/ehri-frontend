@@ -1595,8 +1595,8 @@ cleanup.starting=Starting cleanup with job id: {0}
 cleanup.toMove={0,choice,0#0 items|1#1 item|1<{0,number,integer} items} to move
 cleanup.toDelete={0,choice,0#0 items|1#1 item|1<{0,number,integer} items} to delete
 cleanup.cancelled=Cancelled
-cleanup.relinked=Updated links and annotations
-cleanup.redirected=Redirected {0,choice,0#0 items|1#1 item|1<{0,number,integer} items}
+cleanup.relinked=Updated links and annotations for {0,choice,0#0 items|1#1 item|1<{0,number,integer} items}
+cleanup.redirected=Created {0,choice,0#0 redirects|1#1 redirect|1<{0,number,integer} redirects}
 cleanup.deleted=Deleted {0,choice,0#0 items|1#1 item|1<{0,number,integer} items}
 cleanup.done=Cleanup complete
 

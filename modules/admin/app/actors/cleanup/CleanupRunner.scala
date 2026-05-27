@@ -55,7 +55,7 @@ case class CleanupRunner(
     case job: CleanupJob =>
       val msgTo = sender()
       context.become(running(job, msgTo, Status(), Instant.now()))
-      logService.cleanup(job.repoId, job.snapshotId)
+      logService.cleanupInfo(job.repoId, job.snapshotId)
         .pipeTo(self)
   }
 
@@ -63,7 +63,7 @@ case class CleanupRunner(
     // Launch the relink task
     case cleanup: Cleanup =>
       msgTo ! cleanup
-      dataApi.migrateUnits(job.repoId, cleanup.redirects, commit = true)
+      dataApi.migrateUnits(job.repoId, cleanup.redirects, tolerant = true, commit = true)
         .map(_.size)
         .map(c => Relinked(cleanup, status.copy(relinkCount = c)))
         .pipeTo(self)
@@ -72,10 +72,8 @@ case class CleanupRunner(
     case r@Relinked(cleanup, newStatus) =>
       msgTo ! r
       importService.remapMovedUnits(cleanup.redirects)
-        .map { _ => // NB: the API gives us a number that is the total number
-          // of redirected URLs, but we want the number of redirected items,
-          // so it's a bit of a fake here...
-          Redirected(cleanup, newStatus.copy(redirectCount = cleanup.redirects.size))
+        .map { affected =>
+          Redirected(cleanup, newStatus.copy(redirectCount = affected))
         }
         .pipeTo(self)
 
@@ -107,7 +105,7 @@ case class CleanupRunner(
 
     // When there are no more items to delete, save the cleanup log and finish
     case DeleteBatch(cleanup, todo, _) if todo.isEmpty =>
-      logService.saveCleanup(job.repoId, job.snapshotId, cleanup)
+      logService.saveCommittedCleanup(job.repoId, job.snapshotId, cleanup)
         .map(_ => msgTo ! Done(FiniteDuration(java.time.Duration.between(time, Instant.now).toNanos, TimeUnit.NANOSECONDS)))
 
     case m =>
