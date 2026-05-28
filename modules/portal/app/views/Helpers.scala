@@ -14,7 +14,7 @@ import java.time.format.{DateTimeFormatter, FormatStyle}
 object Helpers {
 
   def localisedDateTime(d: java.time.temporal.TemporalAccessor)(implicit messages: Messages): String = {
-    DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+    DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
       .withLocale(messages.lang.toLocale)
       .format(d)
   }

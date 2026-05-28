@@ -158,15 +158,6 @@ case class DocumentaryUnits @Inject()(
     }
   }
 
-  def changes(id: String, versionId: Option[String] = None) = ItemMetaAction(id).async { implicit request =>
-    userDataApi.query(s"classes/DocumentaryUnit/$id", params = Map("_dep" -> Seq("true"), "_noMeta" -> Seq("true"))).flatMap { r =>
-      userDataApi.versions[Version](id, PageParams.empty.withoutLimit).map { versions =>
-        val version: Option[Version] = versions.find(v => versionId.contains(v.id)).orElse(versions.headOption)
-        Ok(views.html.admin.common.diff(request.item, r.json, version, versions))
-      }
-    }
-  }
-
   def list(paging: PageParams): Action[AnyContent] = ItemPageAction(paging).apply { implicit request =>
     Ok(views.html.admin.documentaryUnit.list(request.page, request.params))
   }
@@ -431,5 +422,9 @@ case class DocumentaryUnits @Inject()(
         controllers.admin.routes.Ingest.ingestPost(ContentTypes.DocumentaryUnit,
           scope.id, dataType, Some(id)), sync = true))
     }.getOrElse(InternalServerError(views.html.errors.fatalError()))
+  }
+
+  def diff(id: String, versionId: Option[String] = None): Action[AnyContent] = ItemDiffAction(id, versionId).apply { implicit request =>
+    Ok(views.html.admin.common.diff(request.item, request.json, request.current, request.versions, (id, vid) => docRoutes.diff(id, vid)))
   }
 }
