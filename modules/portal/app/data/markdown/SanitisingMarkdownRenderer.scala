@@ -2,18 +2,18 @@ package data.markdown
 
 import javax.inject.Inject
 import org.jsoup.Jsoup
-import org.jsoup.safety.Whitelist
+import org.jsoup.safety.Safelist
 import views.html.MarkdownRenderer
 
 
 case class SanitisingMarkdownRenderer @Inject() (rawMarkdownRenderer: RawMarkdownRenderer) extends MarkdownRenderer {
 
-  private val whiteListStandard: Whitelist = Whitelist.basic()
+  private val whiteListStandard: Safelist = Safelist.basic()
     .addAttributes("a", "target", "_blank")
     .addAttributes("a", "class", "external")
     .addAttributes("a", "rel", "nofollow noopener")
 
-  private val whiteListStrict: Whitelist = Whitelist.simpleText()
+  private val whiteListStrict: Safelist = Safelist.simpleText()
     .addTags("p", "a")
     .addAttributes("a", "target", "_blank")
     .addAttributes("a", "class", "external")

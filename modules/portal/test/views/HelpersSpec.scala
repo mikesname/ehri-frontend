@@ -30,5 +30,11 @@ class HelpersSpec extends PlaySpecification with I18nSupport {
       implicit val messages: Messages = messagesApi.preferred(Seq(Lang.defaultLang))
       Helpers.countryCodeToName("mk") must_== "North Macedonia"
     }
+    "normalize URLs in a tolerant manner" in {
+      Helpers.normalizeUrl("www.foo.com") must_== "http://www.foo.com"
+      Helpers.normalizeUrl("blah-blah") must_== "blah-blah"
+      Helpers.normalizeUrl("localhost") must_== "localhost"
+      Helpers.normalizeUrl("hal.science") must_== "http://hal.science"
+    }
   }
 }

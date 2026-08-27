@@ -10,7 +10,7 @@ from invoke import run as local
 
 deploys_dir = "/opt/docview/deploys"
 target_link = "/opt/docview/target"
-target_java_version = 11
+target_java_version = 21
 
 
 @task

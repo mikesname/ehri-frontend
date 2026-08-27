@@ -1,9 +1,9 @@
 package controllers.generic
 
-import play.api.mvc.{request, _}
-import play.api.data.Form
-import models.{ContentType, EventType, Model, ModelData, PermissionType, Persistable, UserProfile, UsersAndGroups, Writable}
 import forms._
+import models._
+import play.api.data.Form
+import play.api.mvc._
 import services.data.{ConflictError, DataHelpers, ValidationError}
 
 import scala.concurrent.Future

@@ -1,14 +1,15 @@
 package views
 
-import java.net.{MalformedURLException, URL}
-import models.{Annotation, Description, Entity, EntityType, FieldMetadata, Model, PermissionType, UserProfile}
+import models._
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
-import org.jsoup.safety.Whitelist
+import org.jsoup.safety.Safelist
 import play.api.i18n.Messages
 import play.api.mvc.{Call, RequestHeader}
 
+import java.net.URI
 import java.time.format.{DateTimeFormatter, FormatStyle}
+import scala.util.Try
 
 
 object Helpers {
@@ -46,7 +47,7 @@ object Helpers {
   }
 
 
-  def stripTags(htmlText: String): String = Jsoup.clean(htmlText, Whitelist.none())
+  def stripTags(htmlText: String): String = Jsoup.clean(htmlText, Safelist.none())
 
   /**
    * Condense multiple descriptions that are next to each other in a list.
@@ -106,7 +107,7 @@ object Helpers {
   /**
    * Get a list of code->name pairs for the given language.
    */
-  def languagePairList(implicit messages: Messages): List[(String,String)] =
+  def languagePairList(implicit messages: Messages): Seq[(String,String)] =
     i18n.languagePairList(messages)
 
   /**
@@ -115,13 +116,13 @@ object Helpers {
    * NB: The implicit lang parameter is currently ignored because
    * the script data is not localised.
    */
-  def scriptPairList(implicit messages: Messages): List[(String,String)] =
+  def scriptPairList(implicit messages: Messages): Seq[(String,String)] =
     i18n.scriptPairList(messages)
 
   /**
    * Get a list of country->name pairs for the given language.
    */
-  def countryPairList(implicit messages: Messages): List[(String,String)] =
+  def countryPairList(implicit messages: Messages): Seq[(String,String)] =
     i18n.countryPairList(messages)
 
   /**
@@ -198,12 +199,20 @@ object Helpers {
     (mine, promoted, others)
   }
 
-  def normalizeUrl(s: String): String = {
-    try {
-      new URL(s).toString
-    } catch {
-      case e: MalformedURLException if e.getMessage.startsWith("no protocol") => "http://" + s
-      case _: MalformedURLException => s
+  def normalizeUrl(input: String, defaultScheme: String = "http"): String = {
+    val trimmed = input.trim
+    if (trimmed.isEmpty) input else {
+
+      val hasScheme = trimmed.matches("(?i)^[a-z][a-z0-9+.-]*://.*")
+      val candidate = if (hasScheme) trimmed else s"$defaultScheme://$trimmed"
+      def isPlausibleUrl(url: String): Boolean = url.matches(".*[^.]+\\.[^.].*")
+
+      Try(new URI(candidate))
+        .filter(uri => uri.getHost != null
+            && uri.getHost.nonEmpty
+            && isPlausibleUrl(uri.toString))
+        .map(_.toString)
+        .getOrElse(input)
     }
   }
 

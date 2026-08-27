@@ -10,7 +10,7 @@ package object i18n {
   def languagePairList(implicit messages: Messages): List[(String, String)] = {
     val locale = messages.lang.toLocale
     val localeLangs = lang3to2lookup.map { case (c3, c2) =>
-      c3 -> WordUtils.capitalize(new java.util.Locale(c2).getDisplayLanguage(locale))
+      c3 -> WordUtils.capitalize(Locale.forLanguageTag(c2).getDisplayLanguage(locale))
     }.toList
 
     (localeLangs ::: additionalLanguages.toList.map(l => l -> Messages("languageCode." + l))).sortBy(_._2)
@@ -20,7 +20,7 @@ package object i18n {
     * Lazily build a lookup of ISO 639-2 (3-letter) to 639-1 (2-letter) codes
     */
   lazy val lang3to2lookup: Map[String, String] = Locale.getISOLanguages.flatMap { code =>
-    new Locale(code, "").getISO3Language match {
+    Locale.of(code, "").getISO3Language match {
       case c3 if c3 != "" => Some(c3 -> code)
       case _ => Nil
     }
@@ -30,7 +30,7 @@ package object i18n {
     * Lazily build a lookup of ISO 639-2 (3-letter) to 639-1 (2-letter) codes
     */
   lazy val lang2to3lookup: Map[String, String] = Locale.getISOLanguages.flatMap { code =>
-    new Locale(code, "").getISO3Language match {
+    Locale.of(code, "").getISO3Language match {
       case c3 if c3 != "" => Some(code -> c3)
       case _ => Nil
     }
@@ -40,7 +40,7 @@ package object i18n {
     * Get the name for a language, if we can find one.
     */
   def languageCode2ToNameOpt(code: String)(implicit messages: Messages): Option[String] = {
-    new Locale(code, "").getDisplayLanguage(messages.lang.toLocale) match {
+    Locale.of(code, "").getDisplayLanguage(messages.lang.toLocale) match {
       case d if d.nonEmpty => Some(d)
       case _ => None
     }
@@ -57,7 +57,7 @@ package object i18n {
       .getOrElse(c)
   }
 
-  def scriptPairList(messages: Messages): List[(String, String)] = scripts.sortBy(_._2)
+  def scriptPairList(messages: Messages): Seq[(String, String)] = scripts.sortBy(_._2)
 
   /**
     * Get the script name for a given code. This doesn't work with Java 6 so we have to sacrifice
@@ -89,7 +89,7 @@ package object i18n {
     val key = "countryCode." + code.toLowerCase
     val i18n = Messages(key)
     if (i18n != key) i18n else {
-      new Locale("", code).getDisplayCountry(messages.lang.toLocale) match {
+      Locale.of("", code).getDisplayCountry(messages.lang.toLocale) match {
         case d if d.nonEmpty => d
         case _ => code
       }
@@ -100,7 +100,6 @@ package object i18n {
     * Get a list of country->name pairs for the given language.
     */
   def countryPairList(implicit messages: Messages): List[(String, String)] = {
-    val locale = messages.lang.toLocale
     java.util.Locale.getISOCountries.map { code =>
       code -> WordUtils.capitalize(countryCodeToName(code))
     }.toList.sortBy(_._2)
@@ -110,7 +109,7 @@ package object i18n {
     * Additional languages not supported by Java Locale. These should
     * have a translation in the messages with the prefix "languageCode".
     */
-  val additionalLanguages = Set(
+  private val additionalLanguages = Set(
     "lad", // Ladino
     "mul", // Multiple
     "sh" // Serbo-Croatian
@@ -122,7 +121,7 @@ package object i18n {
     * Gleaned from: http://unicode.org/iso15924/iso15924-codes.html
     * (with long items slightly truncated for display.)
     */
-  val scripts = List(
+  val scripts: Seq[(String, String)] = List(
     "Afak" -> "Afaka",
     "Aghb" -> "Caucasian Albanian",
     "Arab" -> "Arabic",
