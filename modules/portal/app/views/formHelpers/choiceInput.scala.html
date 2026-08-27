@@ -1,9 +1,9 @@
-@(desc: play.api.data.Field, fieldName: String, options: List[(String,String)], args: (Symbol, Any)*)(implicit prefix: String = "", config: Option[forms.FormFieldHints] = None, messages: Messages, md: MarkdownRenderer, fieldConstructor: views.html.helper.FieldConstructor)
+@(desc: play.api.data.Field, fieldName: String, options: Seq[(String,String)], args: (Symbol, Any)*)(implicit prefix: String = "", config: Option[forms.FormFieldHints] = None, messages: Messages, md: MarkdownRenderer, fieldConstructor: views.html.helper.FieldConstructor)
 
 @views.html.formHelpers.configuredField(desc, fieldName, config) { field =>
     @helper.select(
         field = field,
-        options = (if(args.contains(attrs._blank -> true)) List("" -> "---") else Nil) ::: options,
+        options = (if(args.contains(attrs._blank -> true)) List("" -> "---") else Nil) ::: options.toList,
         args = views.Helpers.argsWithConfig(fieldName, views.Helpers.argsWithDefaults(
             args.map { case (s, v) => if(s == attrs._class) s -> (v.toString + " form-control") else s -> v },
             attrs._label -> Messages(if(prefix.isEmpty) fieldName else s"$prefix.$fieldName"),

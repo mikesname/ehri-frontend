@@ -9,7 +9,7 @@ import play.api.libs.ws._
 import services._
 import utils.{Page, RangePage, RangeParams}
 
-import java.net.{ConnectException, URLEncoder}
+import java.net.{ConnectException, URI, URL, URLEncoder}
 import java.nio.charset.StandardCharsets
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
@@ -124,7 +124,7 @@ trait WebServiceHelpers {
   /**
     * Standard headers we sent to every Neo4j/EHRI Server request.
     */
-  protected val headers = Map(
+  protected val headers: Map[String, String] = Map(
     HeaderNames.ACCEPT_CHARSET -> StandardCharsets.UTF_8.name
   )
 
@@ -177,17 +177,24 @@ trait WebServiceHelpers {
   }
 
   /**
-    * Encode a bunch of URL parts.
-    */
-  protected def enc(base: String, s: Any*): String = {
-    // FIXME: Clean up/revise/destroy/test this mess of a function
-    def clean(segment: Any): String =
-      segment.toString.replace("?", "%3F").replace("#", "%23")
-    import java.net.URI
-    val url = new java.net.URL((base +: s.map(clean)).mkString("/"))
-    val uri: URI = new URI(url.getProtocol, url.getUserInfo,
-      url.getHost, url.getPort, url.getPath, url.getQuery, url.getRef)
-    uri.toString
+   * Build a URL by joining `base` with `parts` as path segments.
+   *
+   * Each part has `?` and `#` escaped so they aren't misread as the start
+   * of a query string or fragment when the joined string is parsed as a URL.
+   * The result is then round-tripped through `URI`, which takes care of
+   * percent-encoding the rest of the path/query/fragment properly.
+   */
+  protected def enc(base: String, parts: Any*): String = {
+    def escapeSegment(part: Any): String =
+      part.toString.replace("?", "%3F").replace("#", "%23")
+
+    val joined = (base +: parts.map(escapeSegment)).mkString("/")
+    val url: URL = URI.create(joined).toURL
+
+    new URI(
+      url.getProtocol, url.getUserInfo, url.getHost, url.getPort,
+      url.getPath, url.getQuery, url.getRef
+    ).toString
   }
 
   private val serviceConfig = ServiceConfig("ehridata", config)

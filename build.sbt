@@ -79,7 +79,7 @@ val coreDependencies = backendDependencies ++ Seq(
   "commons-codec" % "commons-codec" % "1.11",
 
   // Password hashing
-  "org.mindrot" % "jbcrypt" % "0.3m",
+  "org.mindrot" % "jbcrypt" % "0.4",
 
   // PostgreSQL
   "org.postgresql" % "postgresql" % "42.3.2",
@@ -91,7 +91,7 @@ val coreDependencies = backendDependencies ++ Seq(
   "com.atlassian.commonmark" % "commonmark-ext-autolink" % "0.12.1",
 
   // HTML sanitising...
-  "org.jsoup" % "jsoup" % "1.11.3",
+  "org.jsoup" % "jsoup" % "1.23.1",
 
   // Mailer...
   "org.playframework" %% "play-mailer" % "11.0.0-M1",
@@ -161,6 +161,7 @@ val commonSettings = Seq(
 
   // Show warnings and deprecations
   ThisBuild / scalacOptions ++= Seq(
+    "-release:21",
     "-encoding", "UTF-8",
     "-Ywarn-unused:imports",
     "-unchecked",

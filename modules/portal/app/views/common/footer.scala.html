@@ -31,7 +31,7 @@
                 </div>
             </div>
             <ul id="lang-switcher">
-            @conf.languages.map(c => (c, new java.util.Locale(c))).map { case (changeLang, locale) =>
+            @conf.languages.map(c => (c, java.util.Locale.forLanguageTag(c))).map { case (changeLang, locale) =>
                 <li class="@{if(messages.lang.toString.toLowerCase.contains(changeLang)) "active"}">
                     <a href="@controllers.portal.routes.Portal.changeLocale(changeLang)">
                         @StringUtils.capitalize(locale.getDisplayName(locale))

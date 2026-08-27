@@ -51,7 +51,7 @@
             @views.html.api.helpers.curlField("api-usage-curl") {
                 curl --header Content-type:application/json \
                     @controllers.api.graphql.routes.GraphQL.query().absoluteURL(conf.https) \
-                    --data-binary '@Html(org.jsoup.Jsoup.clean(Json.stringify(Json.obj("query" -> query)), org.jsoup.safety.Whitelist.simpleText()))'
+                    --data-binary '@Html(org.jsoup.Jsoup.clean(Json.stringify(Json.obj("query" -> query)), org.jsoup.safety.Safelist.simpleText()))'
             }
         </div>
 
