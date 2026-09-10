@@ -31,8 +31,8 @@ declare function local:ebv($item as item()*) as xs:boolean {
   else fn:boolean($item)
 };
 
-(: evaluate a per-row XQuery expression, exposing the row as a map so that :)
-(: `?column` lookups (and xtra: functions) work, as in the other transformers :)
+(: evaluate an XQuery expression against a record, exposing its columns as :)
+(: `?column` lookups (plus xtra: functions), as in the other transformers :)
 declare function local:eval-row(
   $expr as xs:string?,
   $record as element(record),
@@ -48,121 +48,103 @@ declare function local:eval-row(
   else ()
 };
 
-(: --- operations (each: element(csv) -> element(csv)) ---------------------- :)
+(: --- producing ops --------------------------------------------------------- :)
+(: each reads directly from the original input record - never from another   :)
+(: row's output - and returns the output entry/entries it contributes.       :)
 
-(: keep and reorder the named columns :)
-declare function local:op-select($grid as element(csv), $cols as xs:string*) as element(csv) {
-  <csv>{
-    for $r in $grid/record return
-      <record>{
-        for $c in $cols
-          return let $e := $r/entry[@name = $c] return if ($e) then $e else <entry name="{$c}"/>
-      }</record>
-  }</csv>
-};
-
-(: remove the named columns :)
-declare function local:op-drop($grid as element(csv), $cols as xs:string*) as element(csv) {
-  <csv>{ for $r in $grid/record return <record>{ $r/entry[fn:not(@name = $cols)] }</record> }</csv>
-};
-
-(: rename a column :)
-declare function local:op-rename($grid as element(csv), $from as xs:string, $to as xs:string) as element(csv) {
-  <csv>{
-    for $r in $grid/record return
-      <record>{
-        for $e in $r/entry
-          return if ($e/@name = $from) then <entry name="{$to}">{ $e/node() }</entry> else $e
-      }</record>
-  }</csv>
-};
-
-(: keep rows for which the expression is true :)
-declare function local:op-filter($grid as element(csv), $expr as xs:string?, $libURI as xs:anyURI) as element(csv) {
-  <csv>{
-    for $r in $grid/record
-      where local:ebv(local:eval-row($expr, $r, $libURI))
-      return $r
-  }</csv>
-};
-
-(: append a computed column :)
-declare function local:op-derive($grid as element(csv), $name as xs:string, $expr as xs:string?, $libURI as xs:anyURI) as element(csv) {
-  <csv>{
-    for $r in $grid/record return
-      <record>{
-        $r/entry,
-        <entry name="{$name}">{ fn:string-join(local:eval-row($expr, $r, $libURI) ! fn:string(.), "") }</entry>
-      }</record>
-  }</csv>
-};
-
-(: join several columns into one (removing the sources) :)
-declare function local:op-merge($grid as element(csv), $cols as xs:string*, $to as xs:string, $sep as xs:string) as element(csv) {
-  <csv>{
-    for $r in $grid/record return
-      <record>{
-        $r/entry[fn:not(@name = $cols)],
-        <entry name="{$to}">{ fn:string-join($r/entry[@name = $cols] ! fn:string(.), $sep) }</entry>
-      }</record>
-  }</csv>
-};
-
-(: split one column into several fixed columns :)
-declare function local:op-split($grid as element(csv), $col as xs:string, $into as xs:string*, $sep as xs:string) as element(csv) {
-  <csv>{
-    for $r in $grid/record
-      let $parts := local:split-str(fn:string($r/entry[@name = $col]), $sep)
-      return
-        <record>{
-          $r/entry[fn:not(@name = $col)],
-          for $i in 1 to fn:count($into) return <entry name="{$into[$i]}">{ $parts[$i] }</entry>
-        }</record>
-  }</csv>
-};
-
-(: expand a multi-valued column into one row per value; an empty cell :)
-(: preserves the record as a single row with an empty value :)
-declare function local:op-explode($grid as element(csv), $col as xs:string, $sep as xs:string, $to as xs:string?) as element(csv) {
+(: pass one input column through, optionally renamed :)
+declare function local:produce-select($record as element(record), $col as xs:string, $to as xs:string?) as element(entry)* {
   let $name := ($to[. ne ""], $col)[1]
-  return
-    <csv>{
-      for $r in $grid/record
-        let $vals := local:split-str(fn:string($r/entry[@name = $col]), $sep)
-        for $v in $vals return
-          <record>{
-            for $e in $r/entry
-              return if ($e/@name = $col) then <entry name="{$name}">{ $v }</entry> else $e
-          }</record>
-    }</csv>
+  let $e := $record/entry[@name = $col]
+  return <entry name="{$name}">{ if ($e) then $e/node() else () }</entry>
 };
 
-(: dispatch one pipeline step :)
-declare function local:apply(
+(: join several input columns into one, skipping blank values :)
+declare function local:produce-merge($record as element(record), $cols as xs:string*, $to as xs:string, $sep as xs:string) as element(entry)* {
+  let $vals := for $c in $cols return fn:string($record/entry[@name = $c])
+  return <entry name="{$to}">{ fn:string-join($vals[. ne ""], $sep) }</entry>
+};
+
+(: split one input column into several fixed output columns :)
+declare function local:produce-split($record as element(record), $col as xs:string, $into as xs:string*, $sep as xs:string) as element(entry)* {
+  let $parts := local:split-str(fn:string($record/entry[@name = $col]), $sep)
+  for $i in 1 to fn:count($into) return <entry name="{$into[$i]}">{ $parts[$i] }</entry>
+};
+
+(: compute one output column from an expression over the input record :)
+declare function local:produce-derive($record as element(record), $to as xs:string, $expr as xs:string?, $libURI as xs:anyURI) as element(entry)* {
+  <entry name="{$to}">{ fn:string-join(local:eval-row($expr, $record, $libURI) ! fn:string(.), "") }</entry>
+};
+
+(: dispatch one producing row against one input record :)
+declare function local:produce(
   $op as element(record),
-  $grid as element(csv),
+  $record as element(record),
   $arr-sep as xs:string,
   $libURI as xs:anyURI
-) as element(csv) {
-  let $name := fn:string($op/op)
+) as element(entry)* {
+  let $name := fn:normalize-space($op/op)
   let $cols := local:cols($op/columns)
   let $to := local:cols($op/to)
   let $expr := $op/expr/text()
   let $sep := ($expr, $arr-sep)[1]
   return try {
     switch ($name)
-      case "select"  return local:op-select($grid, $cols)
-      case "drop"    return local:op-drop($grid, $cols)
-      case "rename"  return local:op-rename($grid, $cols[1], $to[1])
-      case "filter"  return local:op-filter($grid, $expr, $libURI)
-      case "derive"  return local:op-derive($grid, $to[1], $expr, $libURI)
-      case "merge"   return local:op-merge($grid, $cols, $to[1], $sep)
-      case "split"   return local:op-split($grid, $cols[1], $to, $sep)
-      case "explode" return local:op-explode($grid, $cols[1], $sep, $to[1])
+      case "select" return local:produce-select($record, $cols[1], $to[1])
+      case "merge"  return local:produce-merge($record, $cols, $to[1], $sep)
+      case "split"  return local:produce-split($record, $cols[1], $to, $sep)
+      case "derive" return local:produce-derive($record, $to[1], $expr, $libURI)
+      (: unreachable in practice: $op is only ever dispatched here for a known op name :)
       default return fn:error(xs:QName("mapping-error"), "Unknown op: " || $name)
   } catch * {
     fn:error(xs:QName("mapping-error"), $err:code || " in op '" || $name || "': " || $err:description)
   }
+};
+
+(: the output column name(s) a producing row is declared to contribute, :)
+(: without evaluating it against any actual record :)
+declare function local:targets($op as element(record)) as xs:string* {
+  let $name := fn:normalize-space($op/op)
+  let $cols := local:cols($op/columns)
+  let $to := local:cols($op/to)
+  return switch ($name)
+    case "select" return ($to[1], $cols[1])[1]
+    case "merge"  return $to[1]
+    case "split"  return $to
+    case "derive" return $to[1]
+    default return ()
+};
+
+(: does this input record satisfy every `filter` row? (vacuously true if none) :)
+declare function local:keeps(
+  $record as element(record),
+  $filters as element(record)*,
+  $libURI as xs:anyURI
+) as xs:boolean {
+  every $f in $filters satisfies
+    try {
+      local:ebv(local:eval-row($f/expr/text(), $record, $libURI))
+    } catch * {
+      fn:error(xs:QName("mapping-error"), $err:code || " in op 'filter': " || $err:description)
+    }
+};
+
+(: build the output record for one input record: the columns contributed by :)
+(: each producing row, in row order. A column only appears if some row      :)
+(: produced it - except that with NO producing rows at all, every input     :)
+(: column passes through unchanged, so a pure delimiter/header "reflavour"  :)
+(: needs no pipeline rows. :)
+declare function local:build-record(
+  $record as element(record),
+  $producing as element(record)*,
+  $arr-sep as xs:string,
+  $libURI as xs:anyURI
+) as element(record) {
+  <record>{
+    if (fn:empty($producing))
+    then $record/entry
+    else for $op in $producing return local:produce($op, $record, $arr-sep, $libURI)
+  }</record>
 };
 
 (: --- main ----------------------------------------------------------------- :)
@@ -180,5 +162,31 @@ let $arr-sep := (map:get($options, "array.separator"), "||")[1]
 
 let $grid := csv:parse($input, map { "separator": $in-sep, "header": $in-header, "format": "attributes" })/csv
 let $ops := csv:parse($config, map { "separator": "tab", "header": "yes", "quotes": "no" })/csv/record
-let $result := fn:fold-left($ops, $grid, function($g, $op) { local:apply($op, $g, $arr-sep, $libURI) })
-return csv:serialize($result, map { "separator": $out-sep, "header": $out-header, "format": "attributes" })
+let $known := ("select", "merge", "split", "derive", "filter")
+let $unknown := $ops[fn:normalize-space(op) != "" and fn:not(fn:normalize-space(op) = $known)]
+
+return
+  if (fn:exists($unknown))
+  then fn:error(xs:QName("mapping-error"), "Unknown op: " || fn:normalize-space($unknown[1]/op))
+  else
+    let $producing := $ops[fn:normalize-space(op) = ("select", "merge", "split", "derive")]
+    let $all-targets := $producing ! local:targets(.)
+    (: two rows producing the same output column is (almost) always a mistake - most :)
+    (: often, listing several source columns across separate `merge` rows instead of :)
+    (: as one comma-separated `columns` cell on a single row :)
+    let $dupes := for $t in fn:distinct-values($all-targets) where fn:count($all-targets[. = $t]) gt 1 return $t
+    return
+      if (fn:exists($dupes))
+      then fn:error(xs:QName("mapping-error"),
+        "Column '" || $dupes[1] || "' is produced by more than one row. If you meant to combine " ||
+        "several source columns, list them together in one row's 'columns' cell (comma-separated), " ||
+        "e.g. merge / colA,colB / " || $dupes[1] || " / <separator> - rather than a separate row per column.")
+      else
+        let $filters := $ops[fn:normalize-space(op) = "filter"]
+        let $result :=
+          <csv>{
+            for $r in $grid/record
+            where local:keeps($r, $filters, $libURI)
+            return local:build-record($r, $producing, $arr-sep, $libURI)
+          }</csv>
+        return csv:serialize($result, map { "separator": $out-sep, "header": $out-header, "format": "attributes" })

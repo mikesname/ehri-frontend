@@ -143,11 +143,24 @@ export default {
       <dl>
         <dt>Ops</dt>
         <dd>
-          <code>select</code>, <code>drop</code>, <code>rename</code>, <code>filter</code>,
-          <code>derive</code>, <code>merge</code>, <code>split</code>, <code>explode</code>
-          &mdash; <code>columns</code> is a comma-separated list; row expressions use
-          <code>?column</code> lookups; for <code>split</code>/<code>merge</code>/<code>explode</code>
-          <code>expr</code> is the separator (defaults to <code>array.separator</code>).
+          <code>select</code>, <code>merge</code>, <code>split</code>, <code>derive</code> each read
+          straight from the input row and contribute one or more named output columns, in row order
+          &mdash; a column appears in the output only if some row produces it (with no producing
+          rows at all, every input column passes through unchanged). <code>filter</code> rows decide
+          which input rows survive; several <code>filter</code> rows are ANDed together and can
+          appear anywhere. Row expressions use <code>?column</code> lookups against the input row.
+        </dd>
+        <dt>select / merge / split</dt>
+        <dd>
+          <code>select</code>: one input column, optionally renamed via <code>to</code>.
+          <code>merge</code>: <code>columns</code> is a comma-separated list of input columns,
+          joined (blank values skipped) into <code>to</code> with <code>expr</code> as the separator
+          (defaults to <code>array.separator</code>). <code>split</code>: <code>columns</code> is
+          the one source column, <code>to</code> a comma-separated list of new column names, and
+          <code>expr</code> the separator. Each output column must come from a single row &mdash;
+          combining several source columns into one? List them all in that one <code>merge</code>
+          row's <code>columns</code> cell, not as separate rows; two rows targeting the same
+          <code>to</code> will fail with an error rather than silently combining.
         </dd>
         <dt>Options</dt>
         <dd>
