@@ -27,10 +27,10 @@ export default {
     },
     // NB: expected columns is actually unused here, because we can't really know it for arbitrary data.
     encode: function (data) {
-      return this.isCsv() ? encodeCsv(data, this.expectedColumns) : encodeTsv(data, this.expectedColumns);
+      return this.isCsv() ? encodeCsv(data, this.expectedColumns) : encodeTsv(data, this.expectedColumns, true);
     },
     decode: function (data) {
-      return this.isCsv() ? decodeCsv(data, this.expectedColumns) : decodeTsv(data, this.expectedColumns);
+      return this.isCsv() ? decodeCsv(data, this.expectedColumns) : decodeTsv(data, this.expectedColumns, true);
     },
   },
   computed: {
@@ -70,5 +70,12 @@ export default {
 
 .tabular-view th {
   white-space: nowrap;
+}
+
+.tabular-view td {
+  /* preserve embedded newlines in cell values (e.g. from a derive/merge
+     expression) instead of collapsing them to a space, while still wrapping
+     long lines rather than overflowing */
+  white-space: pre-wrap;
 }
 </style>

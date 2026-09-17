@@ -8,6 +8,81 @@ class BaseXTabularTransformerSpec extends Specification {
 
   "Tabular transformer should" should {
 
+    "quote a value containing a newline even when the output separator is tab" in {
+      val transformer = BaseXTabularTransformer()
+      val input = "id,a,b\np1,line1,line2\n"
+      val config = header + "\nderive\t\tjoined\tfn:string-join((?a, ?b), \"&#10;\")"
+      val out = transformer.transform(input, config,
+        Map("input.separator" -> "comma", "output.separator" -> "tab"))
+      // csv:serialize quotes values needing it regardless of the chosen separator
+      out must contain("\"line1\nline2\"")
+    }
+
+    "join two strings with a literal newline in a derive expr" in {
+      val transformer = BaseXTabularTransformer()
+      val input = "id,a,b\np1,line1,line2\n"
+      val config = header + "\nderive\t\tjoined\tfn:string-join((?a, ?b), \"&#10;\")"
+      val out = transformer.transform(input, config, Map("input.separator" -> "comma"))
+      out must contain("\"line1\nline2\"")
+    }
+
+    "select the first of two duplicate-named columns" in {
+      val transformer = BaseXTabularTransformer()
+      val input = "ColA,ColA,ColB\nfirst,second,B\n"
+      val config = header + "\nselect\tColA\t\t"
+      val out = transformer.transform(input, config, Map("input.separator" -> "comma"))
+      out must contain("ColA\nfirst")
+    }
+
+    "derive's ?column lookup also resolves duplicate names to the first" in {
+      val transformer = BaseXTabularTransformer()
+      val input = "ColA,ColA,ColB\nfirst,second,B\n"
+      val config = header + "\nderive\t\tColA\t?ColA"
+      val out = transformer.transform(input, config, Map("input.separator" -> "comma"))
+      out must contain("ColA\nfirst")
+    }
+
+    "merge picks the first of a duplicate-named source column" in {
+      val transformer = BaseXTabularTransformer()
+      val input = "ColA,ColA,ColB\nfirst,second,B\n"
+      val config = header + "\nmerge\tColA,ColB\tout\t-"
+      val out = transformer.transform(input, config, Map("input.separator" -> "comma"))
+      out must contain("out\nfirst-B")
+    }
+
+    "redelimit values containing diacritics" in {
+      val transformer = BaseXTabularTransformer()
+      val input = "id,places\np1,Tršice||Terezín\n"
+      val config = Seq(
+        header,
+        "select\tid\t\t",
+        "derive\t\tplaces\tfn:replace(?places, \"\\|\\|\", \"; \")"
+      ).mkString("\n")
+      val out = transformer.transform(input, config, Map("input.separator" -> "comma"))
+      out must contain("p1,Tršice; Terezín")
+    }
+
+    "redelimit a multi-valued column with a derive row" in {
+      val transformer = BaseXTabularTransformer()
+      val input = "id,subjects\np1,war||resistance||letters\n"
+      val config = Seq(
+        header,
+        "select\tid\t\t",
+        "derive\t\tsubjects\tfn:replace(?subjects, \"\\|\\|\", \"; \")"
+      ).mkString("\n")
+      val out = transformer.transform(input, config, Map("input.separator" -> "comma"))
+      out must contain("p1,war; resistance; letters")
+    }
+
+    "filter on a column name containing spaces/punctuation" in {
+      val transformer = BaseXTabularTransformer()
+      val input = "id,Blah blah (blah)\np1,yes\np2,no\n"
+      val config = header + "\nfilter\t\t\t?(\"Blah blah (blah)\") = \"yes\""
+      val out = transformer.transform(input, config, Map("input.separator" -> "comma"))
+      out must contain("p1,yes")
+      out must not(contain("p2,no"))
+    }
+
     "reject two rows that both produce the same output column" in {
       val transformer = BaseXTabularTransformer()
       val input = "id,creator_first,creator_last\np1,Anna,de Vries\n"

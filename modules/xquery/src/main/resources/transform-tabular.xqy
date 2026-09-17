@@ -32,14 +32,18 @@ declare function local:ebv($item as item()*) as xs:boolean {
 };
 
 (: evaluate an XQuery expression against a record, exposing its columns as :)
-(: `?column` lookups (plus xtra: functions), as in the other transformers :)
+(: `?column` lookups (plus xtra: functions), as in the other transformers. :)
+(: If the input has duplicate column names, the first one wins. :)
 declare function local:eval-row(
   $expr as xs:string?,
   $record as element(record),
   $libURI as xs:anyURI
 ) as item()* {
   if ($expr) then
-    let $row := map:merge(for $e in $record/entry return map:entry($e/@name/fn:string(), $e/fn:string()))
+    (: BaseX 8.5's map:merge only takes one argument (no "duplicates" option), and :)
+    (: resolves a clash to the LAST entry - so reverse first, to make it resolve :)
+    (: to the FIRST entry instead, for consistency with the other ops below :)
+    let $row := map:merge(fn:reverse(for $e in $record/entry return map:entry($e/@name/fn:string(), $e/fn:string())))
     return
       if (fn:exists($libURI) and fn:contains($expr, "xtra")) then
         xquery:eval("import module namespace xtra = ""xtra"" at """ || $libURI || """;" || $expr, map { "": $row })
@@ -52,22 +56,28 @@ declare function local:eval-row(
 (: each reads directly from the original input record - never from another   :)
 (: row's output - and returns the output entry/entries it contributes.       :)
 
+(: the first input entry with the given column name (duplicate headers :)
+(: otherwise silently concatenate, or error out of fn:string's 1-item limit) :)
+declare function local:entry($record as element(record), $col as xs:string) as element(entry)? {
+  $record/entry[@name = $col][1]
+};
+
 (: pass one input column through, optionally renamed :)
 declare function local:produce-select($record as element(record), $col as xs:string, $to as xs:string?) as element(entry)* {
   let $name := ($to[. ne ""], $col)[1]
-  let $e := $record/entry[@name = $col]
+  let $e := local:entry($record, $col)
   return <entry name="{$name}">{ if ($e) then $e/node() else () }</entry>
 };
 
 (: join several input columns into one, skipping blank values :)
 declare function local:produce-merge($record as element(record), $cols as xs:string*, $to as xs:string, $sep as xs:string) as element(entry)* {
-  let $vals := for $c in $cols return fn:string($record/entry[@name = $c])
+  let $vals := for $c in $cols return fn:string(local:entry($record, $c))
   return <entry name="{$to}">{ fn:string-join($vals[. ne ""], $sep) }</entry>
 };
 
 (: split one input column into several fixed output columns :)
 declare function local:produce-split($record as element(record), $col as xs:string, $into as xs:string*, $sep as xs:string) as element(entry)* {
-  let $parts := local:split-str(fn:string($record/entry[@name = $col]), $sep)
+  let $parts := local:split-str(fn:string(local:entry($record, $col)), $sep)
   for $i in 1 to fn:count($into) return <entry name="{$into[$i]}">{ $parts[$i] }</entry>
 };
 
