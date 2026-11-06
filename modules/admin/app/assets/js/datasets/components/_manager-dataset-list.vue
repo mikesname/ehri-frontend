@@ -3,7 +3,7 @@ import {defineComponent, PropType} from 'vue';
 
 import ModalDatasetConfig from './_modal-dataset-config.vue';
 import ModalDatasetIo from './_modal-dataset-io.vue'
-import ModalBatchOps from './_modal-batch-ops.vue';
+import ModalBatchOps, {BATCH_URL_KEY} from './_modal-batch-ops.vue';
 import ManagerSnapshots from "./_manager-snapshots.vue";
 import ManagerCoreference from "./_manager-coreference.vue";
 import ManagerTimeline from "./_manager-timeline.vue";
@@ -161,6 +161,9 @@ export default defineComponent({
       let qsDs = this.getQueryParam(window.location.search, "ds");
       if (qsDs) {
         this.selectDataset(_find(this.datasets, d => d.id === qsDs));
+      }
+      if (this.getQueryParam(window.location.search, BATCH_URL_KEY)) {
+        this.showBatchForm = true;
       }
     });
   },
