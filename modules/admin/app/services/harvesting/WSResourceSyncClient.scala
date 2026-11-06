@@ -6,7 +6,7 @@ import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import org.apache.pekko.util.ByteString
 import org.xml.sax.SAXParseException
-import play.api.Logger
+import play.api.{Configuration, Logger}
 import play.api.libs.ws.{WSAuthScheme, WSClient, WSRequest}
 
 import java.util.regex.Pattern
@@ -23,10 +23,24 @@ import scala.xml.{Node, NodeSeq}
   *  - prevent infinite redirection
   *
   */
-case class WSResourceSyncClient @Inject()(ws: WSClient)(implicit mat: Materializer) extends ResourceSyncClient {
+case class WSResourceSyncClient(ws: WSClient, retryPolicy: RetryPolicy)(implicit mat: Materializer) extends ResourceSyncClient {
+
+  @Inject()
+  def this(ws: WSClient, appConfig: Configuration)(implicit mat: Materializer) = this(ws, RetryPolicy(appConfig))
 
   private val logger: Logger = Logger(classOf[WSResourceSyncClient])
   private implicit val ec: ExecutionContext = mat.executionContext
+
+  private val retryFilter = HttpRetry.filter(retryPolicy)
+
+  override def withoutRetries: ResourceSyncClient = copy(retryPolicy = retryPolicy.copy(maxRetries = 0))
+
+  private def statusError(status: Int): Option[String] = status match {
+    case 200 => None
+    case 404 => Some("notFound")
+    case 429 => Some("tooManyRequests")
+    case _ => Some("unexpectedStatus")
+  }
 
   private def parseAttr(nodes: NodeSeq, key: String): Option[String] =
     nodes.headOption.flatMap(n => parseAttr(n, key))
@@ -36,10 +50,11 @@ case class WSResourceSyncClient @Inject()(ws: WSClient)(implicit mat: Materializ
 
   private def wsReq(config: ResourceSyncConfig, url: String): WSRequest = config.auth.fold(ws.url(url)) { case BasicAuthConfig(username, password) =>
     ws.url(url).withAuth(username, password, WSAuthScheme.BASIC).withFollowRedirects(true)
-  }
+  }.withRequestFilter(retryFilter)
 
   private def readUrlSet(config: ResourceSyncConfig, filter: String => Boolean): Future[Seq[ResourceSyncItem]] = {
     wsReq(config, config.url).get().map { r =>
+      statusError(r.status).foreach(err => throw ResourceSyncError(err, config.url, r.status.toString))
       try {
         (r.xml \ "url").flatMap { urlNode =>
           val md = urlNode \ "md"
@@ -91,17 +106,10 @@ case class WSResourceSyncClient @Inject()(ws: WSClient)(implicit mat: Materializ
   }
 
   override def get(config: ResourceSyncConfig, link: FileLink): Source[ByteString, _] = {
-    // This ensures that the body of an errored request is consumed
-    // so it releases resources.
-    def fail(err: String, status: Int, src: Source[ByteString, _]) = src
-        .map(_ => ByteString.empty)
-        .flatMapConcat(_ => Source.failed(ResourceSyncError(err, link.loc, status.toString)))
-
-    Source.future(wsReq(config, link.loc).get().map { r =>
-      if (r.status == 404) fail("notFound", r.status, r.bodyAsSource)
-      else if (r.status == 429) fail("tooManyRequest", r.status, r.bodyAsSource)
-      else if (r.status != 200) fail("unexpectedStatus", r.status, r.bodyAsSource)
-      else r.bodyAsSource
+    Source.future(wsReq(config, link.loc).get().flatMap { r =>
+      statusError(r.status).fold[Future[Source[ByteString, _]]](immediate(r.bodyAsSource)) { err =>
+        HttpRetry.discardBody(r).flatMap(_ => Future.failed(ResourceSyncError(err, link.loc, r.status.toString)))
+      }
     }).flatMapConcat(src => src)
   }
 }

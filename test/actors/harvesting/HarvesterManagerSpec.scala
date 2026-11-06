@@ -146,7 +146,7 @@ class HarvesterManagerSpec extends IntegrationTestRunner {
       expectMsg(s"Starting harvest with job id: $jobId")
       expectMsg(s"Syncing 3 files")
       expectMsg(20.seconds,
-        s"${WebsocketConstants.ERR_MESSAGE}: ${Messages("resourceSync.error.unexpectedStatus", "429")}")
+        s"${WebsocketConstants.ERR_MESSAGE}: Unexpected HTTP status code: 429")
     }
 
     "harvest selectively with `from` date" in new ITestAppWithPekko {

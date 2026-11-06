@@ -8,7 +8,7 @@ import play.api.i18n.Messages
 import scala.concurrent.Future
 
 case class ResourceSyncError(code: String, url: String, value: String = "") extends RuntimeException(code) with HarvesterError {
-  def errorMessage(implicit messages: Messages): String = Messages(s"resourceSync.error.$code", value)
+  def errorMessage(implicit messages: Messages): String = Messages(s"resourceSync.error.$code", url, value)
 }
 
 /**
@@ -23,6 +23,13 @@ case class ResourceSyncError(code: String, url: String, value: String = "") exte
   * changedumps and smart synchronisation using timestamps etc.
   */
 trait ResourceSyncClient {
+
+  /**
+    * A client which does not retry rate limited requests, for
+    * when waiting would be worse than failing.
+    */
+  def withoutRetries: ResourceSyncClient
+
   /**
     * Given a config, which consists of a capabilitylist URL and
     * a regex filter, fetch a list of file URLs.

@@ -9,7 +9,7 @@ import org.apache.pekko.util.ByteString
 import models.OaiPmhIdentity.Granularity
 import models.{OaiPmhConfig, OaiPmhIdentity}
 import org.w3c.dom.Element
-import play.api.Logger
+import play.api.{Configuration, Logger}
 import play.api.cache.AsyncCacheApi
 import play.api.http.HeaderNames
 import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
@@ -37,9 +37,22 @@ case class Resume(token: String) extends TokenState
 case object Final extends TokenState
 
 
-case class WSOaiPmhClient @Inject()(ws: WSClient, cache: AsyncCacheApi)(implicit ec: ExecutionContext, mat: Materializer) extends OaiPmhClient {
+case class WSOaiPmhClient(ws: WSClient, cache: AsyncCacheApi, retryPolicy: RetryPolicy)(implicit ec: ExecutionContext, mat: Materializer) extends OaiPmhClient {
+
+  @Inject()
+  def this(ws: WSClient, cache: AsyncCacheApi, config: Configuration)(implicit ec: ExecutionContext, mat: Materializer) =
+    this(ws, cache, RetryPolicy(config))
 
   private val logger = Logger(classOf[WSOaiPmhClient])
+  private val retryFilter = HttpRetry.filter(retryPolicy)
+
+  // A streamed body is not checked for errors, so fail if we
+  // are still being rate limited after retrying
+  private def checkStatus(r: WSResponse): Future[WSResponse] =
+    if (!HttpRetry.isRetryable(r.status)) Future.successful(r)
+    else HttpRetry.discardBody(r).flatMap(_ => Future.failed(OaiPmhError(OaiPmhConfig.URL, r.status.toString)))
+
+  override def withoutRetries: OaiPmhClient = copy(retryPolicy = retryPolicy.copy(maxRetries = 0))
 
   @throws[OaiPmhError]
   private def checkError(r: WSResponse): Unit = try {
@@ -69,8 +82,7 @@ case class WSOaiPmhClient @Inject()(ws: WSClient, cache: AsyncCacheApi)(implicit
           val allParams = params ++ otherParams
           val req = newRequest(endpoint).withQueryStringParameters(allParams: _*)
           logger.debug(s"Request: ${req.method} ${req.url}?${utils.http.joinQueryString(req.queryString)}")
-          req
-            .stream().map { response =>
+          req.stream().flatMap(checkStatus).map { response =>
 
             response.bodyAsSource
               .via(XmlParsing.parser)
@@ -93,6 +105,7 @@ case class WSOaiPmhClient @Inject()(ws: WSClient, cache: AsyncCacheApi)(implicit
   private def newRequest(endpoint: OaiPmhConfig): WSRequest = ws
     .url(endpoint.url)
     .withHttpHeaders(endpoint.auth.toSeq.map(s => HeaderNames.AUTHORIZATION -> s"Basic ${s.encodeBase64}"): _*)
+    .withRequestFilter(retryFilter)
 
   private def getGranularity(endpoint: OaiPmhConfig): Future[OaiPmhIdentity.Granularity.Value] = {
     cache.getOrElseUpdate(s"oaipmh-granularity:${endpoint.url}", 1.hour) {
@@ -135,8 +148,7 @@ case class WSOaiPmhClient @Inject()(ws: WSClient, cache: AsyncCacheApi)(implicit
     val verb = "Identify"
     val req = newRequest(endpoint).withQueryStringParameters("verb" -> verb)
     logger.debug(s"Request: ${req.method} ${req.url}?${utils.http.joinQueryString(req.queryString)}")
-    req
-      .get()
+    req.get()
       .map { r =>
         checkError(r)
         r.xml \ verb
@@ -172,9 +184,7 @@ case class WSOaiPmhClient @Inject()(ws: WSClient, cache: AsyncCacheApi)(implicit
     val paramsF = getListParams(verb, endpoint, from, resume)
 
     paramsF.flatMap { params =>
-      newRequest(endpoint)
-        .withQueryStringParameters(params: _*)
-        .get()
+      newRequest(endpoint).withQueryStringParameters(params: _*).get()
         .map { r =>
           checkError(r)
           val xml = r.xml
@@ -210,9 +220,7 @@ case class WSOaiPmhClient @Inject()(ws: WSClient, cache: AsyncCacheApi)(implicit
       "identifier" -> id,
       "metadataPrefix" -> endpoint.format
     )
-    val f = newRequest(endpoint)
-      .withQueryStringParameters(params: _*)
-      .stream()
+    val f = newRequest(endpoint).withQueryStringParameters(params: _*).stream().flatMap(checkStatus)
       .map {
         _.bodyAsSource
           .via(XmlParsing.parser)

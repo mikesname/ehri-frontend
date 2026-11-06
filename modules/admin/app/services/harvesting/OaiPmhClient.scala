@@ -24,6 +24,12 @@ case class OaiPmhError(code: String, value: String = "") extends RuntimeExceptio
 trait OaiPmhClient {
 
   /**
+    * A client which does not retry rate limited requests, for
+    * when waiting would be worse than failing.
+    */
+  def withoutRetries: OaiPmhClient
+
+  /**
     * Retrieve information associated with the OAI-PMH endpoint.
     *
     * @param endpoint the endpoint config object

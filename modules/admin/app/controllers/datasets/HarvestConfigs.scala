@@ -147,8 +147,9 @@ case class HarvestConfigs @Inject()(
   }
 
   private def testOaiPmh(config: OaiPmhConfig)(implicit messages: Messages): Future[Result] = {
-    val getIdentF = oaiPmhClient.identify(config)
-    val listIdentF = oaiPmhClient.listIdentifiers(config)
+    val client = oaiPmhClient.withoutRetries
+    val getIdentF = client.identify(config)
+    val listIdentF = client.listIdentifiers(config)
     (for (ident <- getIdentF; _ <- listIdentF)
       yield Ok(Json.toJson(ident))).recover {
       case e: OaiPmhError => BadRequest(Json.obj("error" -> e.errorMessage))
@@ -200,7 +201,7 @@ case class HarvestConfigs @Inject()(
 
   private def cleanRs(id: String, ds: String, config: ResourceSyncConfig)(implicit req: RequestHeader): Future[Result] = {
     val pre = prefix(id, ds, FileStage.Input)
-    val remoteF: Future[Set[String]] = rsClient.list(config).map { links =>
+    val remoteF: Future[Set[String]] = rsClient.withoutRetries.list(config).map { links =>
       links.map(item => Uri(item.loc).path.dropChars(1).toString).toSet
     }
 

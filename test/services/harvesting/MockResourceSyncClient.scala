@@ -7,6 +7,8 @@ import models.{FileLink, ResourceSyncConfig}
 import scala.concurrent.{ExecutionContext, Future}
 
 case class MockResourceSyncClient @Inject()()(implicit ec: ExecutionContext) extends ResourceSyncClient {
+  override def withoutRetries: ResourceSyncClient = this
+
   override def list(config: ResourceSyncConfig): Future[Seq[FileLink]] = Future {
     Thread.sleep(100)
     Seq(
@@ -17,7 +19,7 @@ case class MockResourceSyncClient @Inject()()(implicit ec: ExecutionContext) ext
   }
 
   override def get(config: ResourceSyncConfig, link: FileLink): Source[ByteString, _] = {
-    if (config.filter.contains("error")) throw ResourceSyncError("unexpectedStatus", "429")
+    if (config.filter.contains("error")) throw ResourceSyncError("unexpectedStatus", link.loc, "429")
     Source.single(ByteString.fromString("""<ead></ead>"""))
   }
 }
