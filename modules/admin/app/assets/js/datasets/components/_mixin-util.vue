@@ -44,7 +44,7 @@ export default defineComponent({
       history.replaceState(
           _omit(this.queryParams(window.location.search), key),
           document.title,
-          this.removeQueryParam(window.location.search, key)
+          window.location.pathname + this.removeQueryParam(window.location.search, [key])
       );
     },
     replaceUrlState: function (key: string, value: string): void {
